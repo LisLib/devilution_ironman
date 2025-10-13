@@ -738,7 +738,7 @@ void CreatePlayer(int pnum, char c)
 	memset(&plr[pnum], 0, sizeof(PlayerStruct));
 #endif
 	ClearPlrRVars(&plr[pnum]);
-	SetRndSeed(GetTickCount());
+	SetRndSeed(InnerGetTickCount());
 
 	if ((DWORD)pnum >= MAX_PLRS) {
 		app_fatal("CreatePlayer: illegal player %d", pnum);

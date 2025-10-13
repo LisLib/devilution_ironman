@@ -646,7 +646,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 #endif
 
 	ShowCursor(FALSE);
-	srand(GetTickCount());
+	srand(InnerGetTickCount());
 	InitHash();
 #ifdef HELLFIRE
 	alloc_plr();
@@ -1067,6 +1067,9 @@ static void PressKey(int vkey)
 		if (sgnTimeoutCurs != CURSOR_NONE) {
 			return;
 		}
+		//if (vkey == MK_CONTROL) {
+
+		//}
 		if (vkey == VK_F9) {
 			diablo_hotkey_msg(0);
 		}
@@ -1370,6 +1373,11 @@ static void PressChar(WPARAM vkey)
 		if (automapflag) {
 			AutomapZoomOut();
 		}
+		return;
+	case 'X':
+	case 'x':
+		extern void changeGameSpeed();
+		changeGameSpeed();
 		return;
 	case 'v':
 #ifndef HELLFIRE
@@ -2164,7 +2172,7 @@ void diablo_color_cyc_logic()
 {
 	DWORD tc;
 
-	tc = GetTickCount();
+	tc = InnerGetTickCount();
 	if (tc - color_cycle_timer >= 50) {
 		color_cycle_timer = tc;
 #ifndef HELLFIRE

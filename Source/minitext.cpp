@@ -92,7 +92,7 @@ void InitQTextMsg(int m)
 		qtexty = 340 + SCREEN_Y;
 		qtextSpd = qscroll_spd_tbl[alltext[m].txtspd - 1];
 		qtextDelay = qtextSpd;
-		sgLastScroll = GetTickCount();
+		sgLastScroll = InnerGetTickCount();
 	}
 	PlaySFX(alltext[m].sfxnr);
 }
@@ -301,7 +301,7 @@ void DrawQText()
 		}
 	}
 
-	currTime = GetTickCount();
+	currTime = InnerGetTickCount();
 	while (1) {
 		if (qtextSpd <= 0) {
 			qtexty--;

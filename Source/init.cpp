@@ -121,13 +121,13 @@ static void init_await_mom_parent_exit()
 {
 	DWORD tick;
 
-	tick = GetTickCount();
+	tick = InnerGetTickCount();
 	if (!init_find_mom_parent()) {
 		return;
 	}
 	do {
 		Sleep(250);
-	} while (GetTickCount() - tick <= 4000 && init_find_mom_parent() != NULL);
+	} while (InnerGetTickCount() - tick <= 4000 && init_find_mom_parent() != NULL);
 }
 
 static void init_run_office_from_start_menu()

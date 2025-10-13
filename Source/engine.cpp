@@ -4144,3 +4144,25 @@ void PlayInGameMovie(const char *pszMovie)
 	PaletteFadeIn(8);
 	force_redraw = 255;
 }
+
+unsigned char GameSpeed = 0;
+void changeGameSpeed()
+{
+	GameSpeed > 1 ? GameSpeed = 0 : ++GameSpeed;
+}
+
+DWORD InnerGetTickCount()
+{
+	static long long prev = GetTickCount();
+	static long long delta = 0;
+	static DWORD tickCounter = 0;
+
+	DWORD cur = GetTickCount();
+
+	delta = cur - prev;
+	prev = cur;
+
+	tickCounter += delta + delta / 2 * GameSpeed;
+
+	return tickCounter;
+}

@@ -2556,6 +2556,78 @@ void DrawView(int StartX, int StartY)
 	if (automapflag) {
 		DrawAutomap();
 	}
+
+	// Draw Ironman Dungeon Status
+	[]() {
+		char desc[256];
+		int nextline = 256;
+
+		int monstersAlive = 0;
+
+		for (int mi = 0; mi < MAXMONSTERS; ++mi)
+		{
+			const MonsterStruct &m = monster[monstactive[mi]];
+
+			if (m._mDelFlag == false
+			    && m._mmode != MM_DEATH
+				&& m._mx > 0
+				&& m._my > 0
+			    && m._mx < MAXDUNX
+			    && m._my < MAXDUNY
+			    && dMonster[m._mx][m._my]
+			    && m.MType != nullptr
+			    && m.MType->mtype != MT_GOLEM
+				)
+				++monstersAlive;
+		}
+
+		sprintf(desc, "Monsters: %i", monstersAlive);
+		PrintGameStr(8, nextline, desc, monstersAlive < 5 ? COL_RED : COL_WHITE);
+
+		nextline += 15;
+
+		int objectsUntouched = 0;
+		for (int i = 0; i < MAXOBJECTS; ++i) {
+			if (object[i]._oSelFlag && object[i]._oDelFlag == false)
+			{
+				switch (object[i]._otype) {
+				case OBJ_CHEST1:
+				case OBJ_CHEST2:
+				case OBJ_CHEST3:
+				case OBJ_TCHEST1:
+				case OBJ_TCHEST2:
+				case OBJ_TCHEST3:
+
+				case OBJ_SARC:
+
+				case OBJ_SHRINEL:
+				case OBJ_SHRINER:
+				case OBJ_GOATSHRINE:
+				case OBJ_CAULDRON:
+
+				case OBJ_BARREL:
+				case OBJ_BARRELEX:
+
+				case OBJ_BOOKCASEL:
+				case OBJ_BOOKCASER:
+
+					++objectsUntouched;
+					break;
+				}
+			}
+		}
+
+		sprintf(desc, "Objects: %i", objectsUntouched);
+		PrintGameStr(8, nextline, desc, objectsUntouched < 5 ? COL_RED : COL_WHITE);
+
+		nextline -= 30;
+		extern unsigned char GameSpeed;
+		if (GameSpeed) {
+			sprintf(desc, "%s", GameSpeed > 1 ? ">>" : ">");
+			PrintGameStr(GameSpeed > 1 ? 316 : 318, 344, desc, GameSpeed > 1 ? COL_RED : COL_BLUE);
+		}
+	}();
+
 	if (invflag) {
 		DrawInv();
 	} else if (sbookflag) {
@@ -2727,7 +2799,7 @@ void ScrollView()
 void EnableFrameCount()
 {
 	frameflag = frameflag == 0;
-	framestart = GetTickCount();
+	framestart = InnerGetTickCount();
 }
 
 /**
@@ -2741,7 +2813,7 @@ static void DrawFPS()
 
 	if (frameflag && gbActive) {
 		frameend++;
-		tc = GetTickCount();
+		tc = InnerGetTickCount();
 		frames = tc - framestart;
 		if (tc - framestart >= 1000) {
 			framestart = tc;
@@ -2782,13 +2854,13 @@ static void DoBlitScreen(DWORD dwX, DWORD dwY, DWORD dwWdt, DWORD dwHgt)
 		SrcRect.right = SrcRect.left + dwWdt - 1;
 		SrcRect.bottom = SrcRect.top + dwHgt - 1;
 		/// ASSERT: assert(! gpBuffer);
-		dwTicks = GetTickCount();
+		dwTicks = InnerGetTickCount();
 		while (1) {
 			hDDVal = lpDDSPrimary->BltFast(dwX, dwY, lpDDSBackBuf, &SrcRect, DDBLTFAST_WAIT);
 			if (hDDVal == DD_OK) {
 				break;
 			}
-			if (dwTicks - GetTickCount() > 5000) {
+			if (dwTicks - InnerGetTickCount() > 5000) {
 				break;
 			}
 			Sleep(1);
@@ -2891,14 +2963,14 @@ static void DrawMain(int dwHgt, BOOL draw_desc, BOOL draw_hp, BOOL draw_mana, BO
 
 	if (lpDDSBackBuf == NULL) {
 		retry = TRUE;
-		dwTicks = GetTickCount();
+		dwTicks = InnerGetTickCount();
 		while (1) {
 			DDS_desc.dwSize = sizeof(DDS_desc);
 			hDDVal = lpDDSPrimary->Lock(NULL, &DDS_desc, DDLOCK_WRITEONLY | DDLOCK_WAIT, NULL);
 			if (hDDVal == DD_OK) {
 				break;
 			}
-			if (dwTicks - GetTickCount() > 5000) {
+			if (dwTicks - InnerGetTickCount() > 5000) {
 				break;
 			}
 			Sleep(1);
@@ -2912,7 +2984,7 @@ static void DrawMain(int dwHgt, BOOL draw_desc, BOOL draw_hp, BOOL draw_mana, BO
 				retry = FALSE;
 				j_dx_reinit();
 				ysize = SCREEN_HEIGHT;
-				dwTicks = GetTickCount();
+				dwTicks = InnerGetTickCount();
 			}
 		}
 		if (hDDVal == DDERR_SURFACELOST

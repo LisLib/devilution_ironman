@@ -59,5 +59,6 @@ void Cl2DrawOutlineSafe(char col, int sx, int sy, BYTE *pCelBuff, int nCel, int 
 void Cl2DrawLightTblSafe(int sx, int sy, BYTE *pCelBuff, int nCel, int nWidth, int CelSkip, int CelCap, char light);
 void Cl2DrawLightSafe(int sx, int sy, BYTE *pCelBuff, int nCel, int nWidth, int CelSkip, int CelCap);
 void PlayInGameMovie(const char *pszMovie);
+DWORD InnerGetTickCount();
 
 #endif /* __ENGINE_H__ */
