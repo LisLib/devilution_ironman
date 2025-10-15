@@ -1374,11 +1374,11 @@ static void PressChar(WPARAM vkey)
 #ifndef _DEBUG
 	case '~':
 	case '`':
-#endif
-	case 'E':
-	case 'e':
 	case 'D':
 	case 'd':
+	case 'E':
+	case 'e':
+#endif
 	case 'X':
 	case 'x':
 		extern void changeGameSpeed();

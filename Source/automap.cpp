@@ -592,28 +592,40 @@ void SearchAutomapMonster()
 	int x, y;
 	int px, py;
 
-	for (int i = 0; i < MAXMONSTERS; ++i)
-	{
-		if (!monster[i]._mDelFlag && dMonster[monster[i]._mx][monster[i]._my]
-			&& monster[i].MType != nullptr
-			&& monster[i].MType->mtype != MT_GOLEM
-		    && monster[i].MType->mtype != MT_DIABLO
-		    && monster[i]._uniqtype != 0
-		    && monster[i].leader != 0
-			)
+	for (int mi = 0; mi < nummonsters; ++mi) {
+		const MonsterStruct &m = monster[monstactive[mi]];
+
+		if (!m._mDelFlag && m.mExp > 0
+		    && m._mx > 0 && m._my > 0
+		    && m._mmode != MM_DEATH
+		    && m.MType != nullptr
+			&& m.MType->mtype != MT_GOLEM)
 		{
-			px = monster[i]._mx - 2 * AutoMapXOfs - ViewX;
-			py = monster[i]._my - 2 * AutoMapYOfs - ViewY;
+			bool uniqBoss = false;
 
-			x = (ScrollInfo._sxoff * AutoMapScale / 100 >> 1) + (px - py) * AmLine16 + SCREEN_WIDTH / 2 + SCREEN_X;
-			y = (ScrollInfo._syoff * AutoMapScale / 100 >> 1) + (px + py) * AmLine8 + (SCREEN_HEIGHT - PANEL_HEIGHT) / 2 + SCREEN_Y;
+			if (m._uniqtype)
+				for (int u = 0; UniqMonst[u].mtype != -1; ++u)
+					if (   UniqMonst[u].mtype == m.MType->mtype
+						&& UniqMonst[u].mtype == (m._uniqtype - 1))
+					{
+						uniqBoss = true;
+						break;
+					}
 
-			if (invflag || sbookflag)
-				x -= 160;
-			if (chrflag || questlog)
-				x += 160;
-			y -= AmLine8;
-			DrawAutomapMonsterD1IM(x, y);
+			if (!uniqBoss) {
+				px = m._mx - 2 * AutoMapXOfs - ViewX;
+				py = m._my - 2 * AutoMapYOfs - ViewY;
+
+				x = (ScrollInfo._sxoff * AutoMapScale / 100 >> 1) + (px - py) * AmLine16 + SCREEN_WIDTH / 2 + SCREEN_X;
+				y = (ScrollInfo._syoff * AutoMapScale / 100 >> 1) + (px + py) * AmLine8 + (SCREEN_HEIGHT - PANEL_HEIGHT) / 2 + SCREEN_Y;
+
+				if (invflag || sbookflag)
+					x -= 160;
+				if (chrflag || questlog)
+					x += 160;
+				y -= AmLine8;
+				DrawAutomapMonsterD1IM(x, y);
+			}
 		}
 	}
 }
@@ -623,22 +635,34 @@ void SearchAutomapObject()
 	int x, y;
 	int px, py;
 
-	for (int i = 0; i < MAXOBJECTS; ++i)
-	{
-		if (objectavail[i] && dObject[object[i]._ox][object[i]._oy] && isIronmanObject(object[i]))
+	for (int oi = 0; oi < nobjects; ++oi) {
+		const ObjectStruct &o = object[objectactive[oi]];
+
+		if (!o._oDelFlag && o._oSelFlag
+		    && o._ox > 0 && o._oy > 0)
 		{
-			px = object[i]._ox - 2 * AutoMapXOfs - ViewX;
-			py = object[i]._oy - 2 * AutoMapYOfs - ViewY;
+			switch (o._otype) {
+			case OBJ_L1LDOOR:
+			case OBJ_L1RDOOR:
+			case OBJ_L2LDOOR:
+			case OBJ_L2RDOOR:
+			case OBJ_L3LDOOR:
+			case OBJ_L3RDOOR:
+				break;
+			default:
+				px = o._ox - 2 * AutoMapXOfs - ViewX;
+				py = o._oy - 2 * AutoMapYOfs - ViewY;
 
-			x = (ScrollInfo._sxoff * AutoMapScale / 100 >> 1) + (px - py) * AmLine16 + SCREEN_WIDTH / 2 + SCREEN_X;
-			y = (ScrollInfo._syoff * AutoMapScale / 100 >> 1) + (px + py) * AmLine8 + (SCREEN_HEIGHT - PANEL_HEIGHT) / 2 + SCREEN_Y;
+				x = (ScrollInfo._sxoff * AutoMapScale / 100 >> 1) + (px - py) * AmLine16 + SCREEN_WIDTH / 2 + SCREEN_X;
+				y = (ScrollInfo._syoff * AutoMapScale / 100 >> 1) + (px + py) * AmLine8 + (SCREEN_HEIGHT - PANEL_HEIGHT) / 2 + SCREEN_Y;
 
-			if (invflag || sbookflag)
-				x -= 160;
-			if (chrflag || questlog)
-				x += 160;
-			y -= AmLine8;
-			DrawAutomapObjectD1IM(x, y);
+				if (invflag || sbookflag)
+					x -= 160;
+				if (chrflag || questlog)
+					x += 160;
+				y -= AmLine8;
+				DrawAutomapObjectD1IM(x, y);
+			}
 		}
 	}
 }
