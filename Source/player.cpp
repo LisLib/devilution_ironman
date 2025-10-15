@@ -1061,6 +1061,8 @@ void AddPlrExperience(int pnum, int lvl, int exp)
 	}
 
 	plr[pnum]._pExperience += exp;
+	force_redraw = 255;
+
 	if ((DWORD)plr[pnum]._pExperience > MAXEXP) {
 		plr[pnum]._pExperience = MAXEXP;
 	}
@@ -1078,6 +1080,7 @@ void AddPlrExperience(int pnum, int lvl, int exp)
 	if (newLvl != plr[pnum]._pLevel) {
 		for (i = newLvl - plr[pnum]._pLevel; i > 0; i--) {
 			NextPlrLevel(pnum);
+			PlaySFX(LS_RESUR);
 		}
 	}
 

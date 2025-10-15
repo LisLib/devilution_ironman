@@ -49,7 +49,7 @@ HANDLE hfopt2_mpq;
 /* data */
 
 char gszVersionNumber[MAX_PATH] = "internal version unknown";
-char gszProductName[MAX_PATH] = "Diablo v1.09";
+char gszProductName[MAX_PATH] = "Diablo v1.09c";
 
 static void init_run_office(char *dir)
 {

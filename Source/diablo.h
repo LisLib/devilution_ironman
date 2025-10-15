@@ -71,4 +71,6 @@ extern int framestart;
 #endif
 extern BOOL FriendlyMode;
 
+extern bool isALtKeyPressed;
+
 #endif /* __DIABLO_H__ */

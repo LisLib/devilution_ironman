@@ -2044,8 +2044,25 @@ void MonstStartKill(int i, int pnum, BOOL sendmsg)
 	Monst = &monster[i];
 	if (pnum >= 0)
 		Monst->mWhoHit |= 1 << pnum;
+
+	// Ironman Patch: a shared experience for nearby players
+	if (pnum >= 0 && pnum < MAX_PLRS) {
+		for (int i = 0; i < MAX_PLRS; ++i) {
+			if (plr[i].plractive) {
+				bool closeToDeadMoster = abs(Monst->_mx - plr[i]._px) <= 10;
+				closeToDeadMoster |= abs(Monst->_my - plr[i]._py) <= 10;
+				
+				bool isSameDung = plr[i].plrlevel == plr[pnum].plrlevel;
+
+				if (closeToDeadMoster && isSameDung)
+					Monst->mWhoHit |= 1 << i;
+			}
+		}
+	}
+
 	if (pnum < MAX_PLRS && i > MAX_PLRS) /// BUGFIX: i >= MAX_PLRS
 		AddPlrMonstExper(Monst->mLevel, Monst->mExp, Monst->mWhoHit);
+
 	monstkills[Monst->MType->mtype]++;
 	Monst->_mhitpoints = 0;
 	SetRndSeed(Monst->_mRndSeed);

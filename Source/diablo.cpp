@@ -1067,9 +1067,6 @@ static void PressKey(int vkey)
 		if (sgnTimeoutCurs != CURSOR_NONE) {
 			return;
 		}
-		//if (vkey == MK_CONTROL) {
-
-		//}
 		if (vkey == VK_F9) {
 			diablo_hotkey_msg(0);
 		}
@@ -1374,6 +1371,14 @@ static void PressChar(WPARAM vkey)
 			AutomapZoomOut();
 		}
 		return;
+#ifndef _DEBUG
+	case '~':
+	case '`':
+#endif
+	case 'E':
+	case 'e':
+	case 'D':
+	case 'd':
 	case 'X':
 	case 'x':
 		extern void changeGameSpeed();
@@ -1606,6 +1611,8 @@ LRESULT CALLBACK GM_Game(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_SYSKEYDOWN:
 		if (PressSysKey(wParam))
 			return 0;
+		break;
+	case WM_SYSKEYUP:
 		break;
 	case WM_SYSCOMMAND:
 		if (wParam == SC_CLOSE) {

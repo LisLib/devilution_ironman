@@ -30,4 +30,12 @@ void EnableFrameCount();
 void scrollrt_draw_game_screen(BOOL draw_cursor);
 void DrawAndBlit();
 
+// Ironman patch
+bool isIronmanObject(const ObjectStruct &object);
+bool isNeedToHighlightObjectsOnAutomap();
+bool isNeedToHighlightObjectsOnFloor();
+bool isNeedToHighlightItemsOnFloor();
+bool isNeedToHighlightItemsOnAutomap();
+bool isNeedToHighlightMonstersOnAutomap();
+
 #endif /* __SCROLLRT_H__ */

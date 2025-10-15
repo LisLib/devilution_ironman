@@ -60,5 +60,6 @@ void Cl2DrawLightTblSafe(int sx, int sy, BYTE *pCelBuff, int nCel, int nWidth, i
 void Cl2DrawLightSafe(int sx, int sy, BYTE *pCelBuff, int nCel, int nWidth, int CelSkip, int CelCap);
 void PlayInGameMovie(const char *pszMovie);
 DWORD InnerGetTickCount();
+void PlaySoundIfDungeonLevelClearIM();
 
 #endif /* __ENGINE_H__ */

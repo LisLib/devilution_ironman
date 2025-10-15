@@ -2615,6 +2615,18 @@ static DWORD On_OPENCRYPT(TCmd *pCmd, int pnum)
 }
 #endif
 
+// Diablo 1 Iroman patch
+static DWORD On_CHANGEGAMESPEED(TCmd *pCmd, int pnum)
+{
+	TCmdParam3 *p = (TCmdParam3 *)pCmd;
+
+	extern unsigned char PlayersGameSpeed[MAX_PLRS];
+
+	PlayersGameSpeed[pnum] = (unsigned char)(p->wParam1);
+	
+	return sizeof(*p);
+}
+
 DWORD ParseCmd(int pnum, TCmd *pCmd)
 {
 	sbLastCmd = pCmd->bCmd;
@@ -2781,6 +2793,8 @@ DWORD ParseCmd(int pnum, TCmd *pCmd)
 	case CMD_OPENCRYPT:
 		return On_OPENCRYPT(pCmd, pnum);
 #endif
+	case CMD_CHANGEGAMESPEED:
+		return On_CHANGEGAMESPEED(pCmd, pnum);
 	}
 
 	if (pCmd->bCmd < CMD_DLEVEL_0 || pCmd->bCmd > CMD_DLEVEL_END) {

@@ -385,6 +385,7 @@ const char gszHelpText[] = {
 	"G: Increase screen brightness|"
 	"Z: Zoom Game Screen|"
 	"+ / -: Zoom Automap|"
+	"E, D, X, '~': Toggle game speed|"
 	"1 - 8: Use Belt item|"
 	"F5, F6, F7, F8:     Set hot key for skill or spell|"
 	"Shift + Left Click: Attack without moving|"

@@ -4145,10 +4145,15 @@ void PlayInGameMovie(const char *pszMovie)
 	force_redraw = 255;
 }
 
-unsigned char GameSpeed = 0;
+unsigned char SelectedGameSpeed = 0;
+unsigned char PlayersGameSpeed[MAX_PLRS] = { 0 };
+unsigned char CurrentGameSpeed = 0;
+
 void changeGameSpeed()
 {
-	GameSpeed > 1 ? GameSpeed = 0 : ++GameSpeed;
+	SelectedGameSpeed > 1 ? SelectedGameSpeed = 0 : ++SelectedGameSpeed;
+	PlaySFX(IS_TITLEMOV);
+	NetSendCmdParam3(TRUE, CMD_CHANGEGAMESPEED, (DWORD)SelectedGameSpeed, 0, 0);
 }
 
 DWORD InnerGetTickCount()
@@ -4162,7 +4167,34 @@ DWORD InnerGetTickCount()
 	delta = cur - prev;
 	prev = cur;
 
-	tickCounter += delta + delta / 2 * GameSpeed;
+	CurrentGameSpeed = SelectedGameSpeed;
+
+	for (int i = 0; i < MAX_PLRS; ++i) {
+		if (plr[i].plractive) {
+			if (PlayersGameSpeed[i] < CurrentGameSpeed)
+				CurrentGameSpeed = PlayersGameSpeed[i];
+		}
+	}
+
+	tickCounter += delta + delta / 2 * CurrentGameSpeed;
 
 	return tickCounter;
+}
+
+void PlaySoundIfDungeonLevelClearIM()
+{
+	static bool isClear = false;
+
+	extern int monstersAlive;
+	extern int objectsUntouched;
+
+	if (monstersAlive == 0 && objectsUntouched == 0)
+	{
+		if (!isClear) {
+			PlaySFX(IS_QUESTDN);
+			isClear = true;
+		}
+	}
+	else if (isClear)
+		isClear = false;
 }
