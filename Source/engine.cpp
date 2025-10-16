@@ -4176,7 +4176,7 @@ DWORD InnerGetTickCount()
 		}
 	}
 
-	tickCounter += delta + delta / 2 * CurrentGameSpeed;
+	tickCounter += delta + delta / 4 * CurrentGameSpeed;
 
 	return tickCounter;
 }

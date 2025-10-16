@@ -798,7 +798,7 @@ static void DrawObject(int x, int y, int ox, int oy, BOOL pre, int CelSkip, int 
 		return;
 	}
 
-	if (isIronmanObject(object[bv]) && isNeedToHighlightObjectsOnFloor() || bv == pcursobj)
+	if (isReadyToHighlightObjectsOnFloor(object[bv]) || bv == pcursobj)
 		CelBlitOutline(194, sx, sy, object[bv]._oAnimData, object[bv]._oAnimFrame, object[bv]._oAnimWidth, CelSkip, CelCap);
 	if (object[bv]._oLight) {
 		CelClippedDrawLight(sx, sy, object[bv]._oAnimData, object[bv]._oAnimFrame, object[bv]._oAnimWidth, CelSkip, CelCap);
@@ -865,7 +865,7 @@ static void DrawClippedObject(int x, int y, int ox, int oy, BOOL pre, int CelSki
 		return;
 	}
 
-	if (isIronmanObject(object[bv]) && isNeedToHighlightObjectsOnFloor() || bv == pcursobj)
+	if (isReadyToHighlightObjectsOnFloor(object[bv]) || bv == pcursobj)
 		CelBlitOutlineSafe(194, sx, sy, object[bv]._oAnimData, object[bv]._oAnimFrame, object[bv]._oAnimWidth, CelSkip, CelCap);
 	if (object[bv]._oLight)
 		CelDrawLightSafe(sx, sy, object[bv]._oAnimData, object[bv]._oAnimFrame, object[bv]._oAnimWidth, CelSkip, CelCap);
@@ -1032,7 +1032,7 @@ static void scrollrt_draw_clipped_dungeon(BYTE *pBuff, int sx, int sy, int dx, i
 				}
 				px = dx - pItem->_iAnimWidth2;
 
-				if (isNeedToHighlightItemsOnFloor() || bItem - 1 == pcursitem
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -1171,7 +1171,7 @@ static void scrollrt_draw_clipped_dungeon(BYTE *pBuff, int sx, int sy, int dx, i
 				}
 				px = dx - pItem->_iAnimWidth2;
 				
-				if (isNeedToHighlightItemsOnFloor() || bItem - 1 == pcursitem
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -1529,7 +1529,7 @@ static void scrollrt_draw_clipped_dungeon_2(BYTE *pBuff, int sx, int sy, int row
 				}
 				px = dx - pItem->_iAnimWidth2;
 
-				if (isNeedToHighlightItemsOnFloor() || bItem - 1 == pcursitem
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -1676,7 +1676,7 @@ static void scrollrt_draw_clipped_dungeon_2(BYTE *pBuff, int sx, int sy, int row
 				}
 				px = dx - pItem->_iAnimWidth2;
 
-				if (isNeedToHighlightItemsOnFloor() || bItem - 1 == pcursitem
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -1961,7 +1961,7 @@ static void scrollrt_draw_dungeon(BYTE *pBuff, int sx, int sy, int row, int CelC
 				}
 				px = dx - pItem->_iAnimWidth2;
 
-				if (isNeedToHighlightItemsOnFloor() || bItem - 1 == pcursitem
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -2105,7 +2105,7 @@ static void scrollrt_draw_dungeon(BYTE *pBuff, int sx, int sy, int row, int CelC
 				}
 				px = dx - pItem->_iAnimWidth2;
 
-				if (isNeedToHighlightItemsOnFloor() || bItem - 1 == pcursitem
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -2574,27 +2574,36 @@ bool isIronmanObject(const ObjectStruct &object)
 	return false;
 }
 
-bool isNeedToHighlightObjectsOnAutomap()
+bool isReadyToHighlightObjectsOnAutomap()
 {	
 	return monstersAlive == 0 || objectsUntouched <= 5;
 }
 
-bool isNeedToHighlightObjectsOnFloor()
+bool isReadyToHighlightObjectsOnFloor(const ObjectStruct &object)
 {	
+	switch (object._otype && object._oSelFlag) {
+	case OBJ_L1LIGHT:
+	case OBJ_L1RDOOR:
+	case OBJ_L2LDOOR:
+	case OBJ_L2RDOOR:
+	case OBJ_L3LDOOR:
+	case OBJ_L3RDOOR:
+		return false;
+	}
 	return !automapflag || (GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
 }
 
-bool isNeedToHighlightItemsOnFloor()
+bool isReadyToHighlightItemsOnFloor()
 {
 	return !automapflag || (GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
 }
 
-bool isNeedToHighlightItemsOnAutomap()
+bool isReadyToHighlightItemsOnAutomap()
 {
 	return monstersAlive == 0 && objectsUntouched == 0;
 }
 
-bool isNeedToHighlightMonstersOnAutomap()
+bool isReadyToHighlightMonstersOnAutomap()
 {
 	return monstersAlive <= 5 ;
 }

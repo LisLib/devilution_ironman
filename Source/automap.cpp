@@ -641,15 +641,7 @@ void SearchAutomapObject()
 		if (!o._oDelFlag && o._oSelFlag
 		    && o._ox > 0 && o._oy > 0)
 		{
-			switch (o._otype) {
-			case OBJ_L1LDOOR:
-			case OBJ_L1RDOOR:
-			case OBJ_L2LDOOR:
-			case OBJ_L2RDOOR:
-			case OBJ_L3LDOOR:
-			case OBJ_L3RDOOR:
-				break;
-			default:
+			if (isIronmanObject(o)) {
 				px = o._ox - 2 * AutoMapXOfs - ViewX;
 				py = o._oy - 2 * AutoMapYOfs - ViewY;
 
@@ -925,13 +917,13 @@ void DrawAutomap()
 		SearchAutomapItem();
 #endif
 
-	if (isNeedToHighlightItemsOnAutomap())
+	if (isReadyToHighlightItemsOnAutomap())
 		SearchAutomapItem();
 
-	if (isNeedToHighlightMonstersOnAutomap())
+	if (isReadyToHighlightMonstersOnAutomap())
 		SearchAutomapMonster();
 
-	if (isNeedToHighlightObjectsOnAutomap())
+	if (isReadyToHighlightObjectsOnAutomap())
 		SearchAutomapObject();
 
 	DrawAutomapText();
