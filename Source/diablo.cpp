@@ -646,7 +646,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 #endif
 
 	ShowCursor(FALSE);
-	srand(GetTickCount());
+	srand(InnerGetTickCount());
 	InitHash();
 #ifdef HELLFIRE
 	alloc_plr();
@@ -1371,6 +1371,19 @@ static void PressChar(WPARAM vkey)
 			AutomapZoomOut();
 		}
 		return;
+#ifndef _DEBUG
+	case '~':
+	case '`':
+	case 'D':
+	case 'd':
+	case 'E':
+	case 'e':
+#endif
+	case 'X':
+	case 'x':
+		extern void changeGameSpeed();
+		changeGameSpeed();
+		return;
 	case 'v':
 #ifndef HELLFIRE
 		NetSendCmdString(1 << myplr, gszProductName);
@@ -1598,6 +1611,8 @@ LRESULT CALLBACK GM_Game(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_SYSKEYDOWN:
 		if (PressSysKey(wParam))
 			return 0;
+		break;
+	case WM_SYSKEYUP:
 		break;
 	case WM_SYSCOMMAND:
 		if (wParam == SC_CLOSE) {
@@ -2164,7 +2179,7 @@ void diablo_color_cyc_logic()
 {
 	DWORD tc;
 
-	tc = GetTickCount();
+	tc = InnerGetTickCount();
 	if (tc - color_cycle_timer >= 50) {
 		color_cycle_timer = tc;
 #ifndef HELLFIRE

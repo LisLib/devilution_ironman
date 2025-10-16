@@ -481,6 +481,184 @@ void SearchAutomapItem()
 }
 #endif
 
+static void DrawAutomapItemD1IM(int x, int y, char number)
+{
+	BYTE color = PAL16_GRAY + 2;
+
+	switch (item[number-1]._iMiscId)
+	{
+	case IMISC_ELIXSTR:
+	case IMISC_ELIXMAG:
+	case IMISC_ELIXDEX:
+	case IMISC_ELIXVIT:
+		color = PAL8_ORANGE + 1;
+	    break;
+	case IMISC_REJUV:
+		color = PAL8_YELLOW + 1;
+		break;
+	case IMISC_FULLREJUV:
+		color = PAL8_YELLOW + 2;
+	    break;
+	case IMISC_MANA:
+		color = PAL8_BLUE + 1;
+		break;
+	case IMISC_FULLMANA:
+		color = PAL8_BLUE + 2;
+		break;
+	case IMISC_HEAL:
+		color = PAL8_RED + 1;
+		break;
+	case IMISC_FULLHEAL:
+		color = PAL8_RED + 2;
+		break;
+	}
+
+	int x1, y1, x2, y2;
+
+	x1 = x - AmLine16 / 2;
+	y1 = y - AmLine8 / 2;
+	x2 = x1 + AmLine32 / 2;
+	y2 = y1 + AmLine16 / 2;
+	DrawLine(x, y1, x1, y, color);
+	DrawLine(x, y1, x2, y, color);
+	DrawLine(x, y2, x1, y, color);
+	DrawLine(x, y2, x2, y, color);
+}
+
+static void DrawAutomapMonsterD1IM(int x, int y)
+{
+	BYTE color = PAL8_RED;
+
+	int x1, y1, x2, y2;
+
+	x1 = x - AmLine16 / 2;
+	y1 = y - AmLine8 / 2;
+	x2 = x1 + AmLine32 / 2;
+	y2 = y1 + AmLine16 / 2;
+
+	DrawLine(x, y, x, y + AmLine8, color+3);
+	DrawLine(x, y, x, y - AmLine8, color+3);
+
+	DrawLine(x, y1, x1, y, color);
+	DrawLine(x, y1, x2, y, color);
+	DrawLine(x, y2, x1, y, color);
+	DrawLine(x, y2, x2, y, color);
+}
+
+static void DrawAutomapObjectD1IM(int x, int y)
+{
+	BYTE color = PAL16_GRAY;
+
+	int x1, y1, x2, y2;
+
+	x1 = x - AmLine16 / 2;
+	y1 = y - AmLine8 / 2;
+	x2 = x1 + AmLine32 / 2;
+	y2 = y1 + AmLine16 / 2;
+	DrawLine(x, y1, x1, y, color);
+	DrawLine(x, y1, x2, y, color);
+	DrawLine(x, y2, x1, y, color);
+	DrawLine(x, y2, x2, y, color);
+}
+
+void SearchAutomapItem()
+{
+	int x, y;
+	int px, py;
+	int i, j;
+
+	for (i = 0; i < MAXDUNX; i++) {
+		for (j = 0; j < MAXDUNY; j++) {
+			if (dItem[i][j] != 0) {
+				px = i - 2 * AutoMapXOfs - ViewX;
+				py = j - 2 * AutoMapYOfs - ViewY;
+
+				x = (ScrollInfo._sxoff * AutoMapScale / 100 >> 1) + (px - py) * AmLine16 + SCREEN_WIDTH / 2 + SCREEN_X;
+				y = (ScrollInfo._syoff * AutoMapScale / 100 >> 1) + (px + py) * AmLine8 + (SCREEN_HEIGHT - PANEL_HEIGHT) / 2 + SCREEN_Y;
+
+				if (invflag || sbookflag)
+					x -= 160;
+				if (chrflag || questlog)
+					x += 160;
+				y -= AmLine8;
+				DrawAutomapItemD1IM(x, y, dItem[i][j]);
+			}
+		}
+	}
+}
+
+void SearchAutomapMonster()
+{
+	int x, y;
+	int px, py;
+
+	for (int mi = 0; mi < nummonsters; ++mi) {
+		const MonsterStruct &m = monster[monstactive[mi]];
+
+		if (!m._mDelFlag && m.mExp > 0
+		    && m._mx > 0 && m._my > 0
+		    && m._mmode != MM_DEATH
+		    && m.MType != nullptr
+			&& m.MType->mtype != MT_GOLEM)
+		{
+			bool uniqBoss = false;
+
+			if (m._uniqtype)
+				for (int u = 0; UniqMonst[u].mtype != -1; ++u)
+					if (   UniqMonst[u].mtype == m.MType->mtype
+						&& UniqMonst[u].mtype == (m._uniqtype - 1))
+					{
+						uniqBoss = true;
+						break;
+					}
+
+			if (!uniqBoss) {
+				px = m._mx - 2 * AutoMapXOfs - ViewX;
+				py = m._my - 2 * AutoMapYOfs - ViewY;
+
+				x = (ScrollInfo._sxoff * AutoMapScale / 100 >> 1) + (px - py) * AmLine16 + SCREEN_WIDTH / 2 + SCREEN_X;
+				y = (ScrollInfo._syoff * AutoMapScale / 100 >> 1) + (px + py) * AmLine8 + (SCREEN_HEIGHT - PANEL_HEIGHT) / 2 + SCREEN_Y;
+
+				if (invflag || sbookflag)
+					x -= 160;
+				if (chrflag || questlog)
+					x += 160;
+				y -= AmLine8;
+				DrawAutomapMonsterD1IM(x, y);
+			}
+		}
+	}
+}
+
+void SearchAutomapObject()
+{
+	int x, y;
+	int px, py;
+
+	for (int oi = 0; oi < nobjects; ++oi) {
+		const ObjectStruct &o = object[objectactive[oi]];
+
+		if (!o._oDelFlag && o._oSelFlag
+		    && o._ox > 0 && o._oy > 0)
+		{
+			if (isIronmanObject(o)) {
+				px = o._ox - 2 * AutoMapXOfs - ViewX;
+				py = o._oy - 2 * AutoMapYOfs - ViewY;
+
+				x = (ScrollInfo._sxoff * AutoMapScale / 100 >> 1) + (px - py) * AmLine16 + SCREEN_WIDTH / 2 + SCREEN_X;
+				y = (ScrollInfo._syoff * AutoMapScale / 100 >> 1) + (px + py) * AmLine8 + (SCREEN_HEIGHT - PANEL_HEIGHT) / 2 + SCREEN_Y;
+
+				if (invflag || sbookflag)
+					x -= 160;
+				if (chrflag || questlog)
+					x += 160;
+				y -= AmLine8;
+				DrawAutomapObjectD1IM(x, y);
+			}
+		}
+	}
+}
+
 /**
  * @brief Renders an arrow on the automap, centered on and facing the direction of the player.
  */
@@ -489,70 +667,77 @@ static void DrawAutomapPlr()
 	int px, py;
 	int x, y;
 
-	if (plr[myplr]._pmode == PM_WALK3) {
-		x = plr[myplr]._pfutx;
-		y = plr[myplr]._pfuty;
-		if (plr[myplr]._pdir == DIR_W)
-			x++;
-		else
-			y++;
-	} else {
-		x = plr[myplr]._px;
-		y = plr[myplr]._py;
-	}
-	px = x - 2 * AutoMapXOfs - ViewX;
-	py = y - 2 * AutoMapYOfs - ViewY;
+	for (int i = 0; i < MAX_PLRS; ++i) {
+		if (!plr[i].plractive)
+			continue;
 
-	x = (plr[myplr]._pxoff * AutoMapScale / 100 >> 1) + (ScrollInfo._sxoff * AutoMapScale / 100 >> 1) + (px - py) * AmLine16 + SCREEN_WIDTH / 2 + SCREEN_X;
-	y = (plr[myplr]._pyoff * AutoMapScale / 100 >> 1) + (ScrollInfo._syoff * AutoMapScale / 100 >> 1) + (px + py) * AmLine8 + (SCREEN_HEIGHT - PANEL_HEIGHT) / 2 + SCREEN_Y;
+		if (plr[i]._pmode == PM_WALK3) {
+			x = plr[i]._pfutx;
+			y = plr[i]._pfuty;
+			if (plr[i]._pdir == DIR_W)
+				x++;
+			else
+				y++;
+		} else {
+			x = plr[i]._px;
+			y = plr[i]._py;
+		}
+		px = x - 2 * AutoMapXOfs - ViewX;
+		py = y - 2 * AutoMapYOfs - ViewY;
 
-	if (invflag || sbookflag)
-		x -= SCREEN_WIDTH / 4;
-	if (chrflag || questlog)
-		x += SCREEN_WIDTH / 4;
-	y -= AmLine8;
+		x = (plr[i]._pxoff * AutoMapScale / 100 >> 1) + (ScrollInfo._sxoff * AutoMapScale / 100 >> 1) + (px - py) * AmLine16 + SCREEN_WIDTH / 2 + SCREEN_X;
+		y = (plr[i]._pyoff * AutoMapScale / 100 >> 1) + (ScrollInfo._syoff * AutoMapScale / 100 >> 1) + (px + py) * AmLine8 + (SCREEN_HEIGHT - PANEL_HEIGHT) / 2 + SCREEN_Y;
 
-	switch (plr[myplr]._pdir) {
-	case DIR_N:
-		DrawLine(x, y, x, y - AmLine16, COLOR_PLAYER);
-		DrawLine(x, y - AmLine16, x - AmLine4, y - AmLine8, COLOR_PLAYER);
-		DrawLine(x, y - AmLine16, x + AmLine4, y - AmLine8, COLOR_PLAYER);
-		break;
-	case DIR_NE:
-		DrawLine(x, y, x + AmLine16, y - AmLine8, COLOR_PLAYER);
-		DrawLine(x + AmLine16, y - AmLine8, x + AmLine8, y - AmLine8, COLOR_PLAYER);
-		DrawLine(x + AmLine16, y - AmLine8, x + AmLine8 + AmLine4, y, COLOR_PLAYER);
-		break;
-	case DIR_E:
-		DrawLine(x, y, x + AmLine16, y, COLOR_PLAYER);
-		DrawLine(x + AmLine16, y, x + AmLine8, y - AmLine4, COLOR_PLAYER);
-		DrawLine(x + AmLine16, y, x + AmLine8, y + AmLine4, COLOR_PLAYER);
-		break;
-	case DIR_SE:
-		DrawLine(x, y, x + AmLine16, y + AmLine8, COLOR_PLAYER);
-		DrawLine(x + AmLine16, y + AmLine8, x + AmLine8 + AmLine4, y, COLOR_PLAYER);
-		DrawLine(x + AmLine16, y + AmLine8, x + AmLine8, y + AmLine8, COLOR_PLAYER);
-		break;
-	case DIR_S:
-		DrawLine(x, y, x, y + AmLine16, COLOR_PLAYER);
-		DrawLine(x, y + AmLine16, x + AmLine4, y + AmLine8, COLOR_PLAYER);
-		DrawLine(x, y + AmLine16, x - AmLine4, y + AmLine8, COLOR_PLAYER);
-		break;
-	case DIR_SW:
-		DrawLine(x, y, x - AmLine16, y + AmLine8, COLOR_PLAYER);
-		DrawLine(x - AmLine16, y + AmLine8, x - AmLine4 - AmLine8, y, COLOR_PLAYER);
-		DrawLine(x - AmLine16, y + AmLine8, x - AmLine8, y + AmLine8, COLOR_PLAYER);
-		break;
-	case DIR_W:
-		DrawLine(x, y, x - AmLine16, y, COLOR_PLAYER);
-		DrawLine(x - AmLine16, y, x - AmLine8, y - AmLine4, COLOR_PLAYER);
-		DrawLine(x - AmLine16, y, x - AmLine8, y + AmLine4, COLOR_PLAYER);
-		break;
-	case DIR_NW:
-		DrawLine(x, y, x - AmLine16, y - AmLine8, COLOR_PLAYER);
-		DrawLine(x - AmLine16, y - AmLine8, x - AmLine8, y - AmLine8, COLOR_PLAYER);
-		DrawLine(x - AmLine16, y - AmLine8, x - AmLine4 - AmLine8, y, COLOR_PLAYER);
-		break;
+		if (invflag || sbookflag)
+			x -= SCREEN_WIDTH / 4;
+		if (chrflag || questlog)
+			x += SCREEN_WIDTH / 4;
+		y -= AmLine8;
+
+		BYTE color = COLOR_PLAYER + i;
+
+		switch (plr[i]._pdir) {
+		case DIR_N:
+			DrawLine(x, y, x, y - AmLine16, color);
+			DrawLine(x, y - AmLine16, x - AmLine4, y - AmLine8, color);
+			DrawLine(x, y - AmLine16, x + AmLine4, y - AmLine8, color);
+			break;
+		case DIR_NE:
+			DrawLine(x, y, x + AmLine16, y - AmLine8, color);
+			DrawLine(x + AmLine16, y - AmLine8, x + AmLine8, y - AmLine8, color);
+			DrawLine(x + AmLine16, y - AmLine8, x + AmLine8 + AmLine4, y, color);
+			break;
+		case DIR_E:
+			DrawLine(x, y, x + AmLine16, y, color);
+			DrawLine(x + AmLine16, y, x + AmLine8, y - AmLine4, color);
+			DrawLine(x + AmLine16, y, x + AmLine8, y + AmLine4, color);
+			break;
+		case DIR_SE:
+			DrawLine(x, y, x + AmLine16, y + AmLine8, color);
+			DrawLine(x + AmLine16, y + AmLine8, x + AmLine8 + AmLine4, y, color);
+			DrawLine(x + AmLine16, y + AmLine8, x + AmLine8, y + AmLine8, color);
+			break;
+		case DIR_S:
+			DrawLine(x, y, x, y + AmLine16, color);
+			DrawLine(x, y + AmLine16, x + AmLine4, y + AmLine8, color);
+			DrawLine(x, y + AmLine16, x - AmLine4, y + AmLine8, color);
+			break;
+		case DIR_SW:
+			DrawLine(x, y, x - AmLine16, y + AmLine8, color);
+			DrawLine(x - AmLine16, y + AmLine8, x - AmLine4 - AmLine8, y, color);
+			DrawLine(x - AmLine16, y + AmLine8, x - AmLine8, y + AmLine8, color);
+			break;
+		case DIR_W:
+			DrawLine(x, y, x - AmLine16, y, color);
+			DrawLine(x - AmLine16, y, x - AmLine8, y - AmLine4, color);
+			DrawLine(x - AmLine16, y, x - AmLine8, y + AmLine4, color);
+			break;
+		case DIR_NW:
+			DrawLine(x, y, x - AmLine16, y - AmLine8, color);
+			DrawLine(x - AmLine16, y - AmLine8, x - AmLine8, y - AmLine8, color);
+			DrawLine(x - AmLine16, y - AmLine8, x - AmLine4 - AmLine8, y, color);
+			break;
+		}
 	}
 }
 
@@ -731,6 +916,16 @@ void DrawAutomap()
 	if (AutoMapShowItems)
 		SearchAutomapItem();
 #endif
+
+	if (isReadyToHighlightItemsOnAutomap())
+		SearchAutomapItem();
+
+	if (isReadyToHighlightMonstersOnAutomap())
+		SearchAutomapMonster();
+
+	if (isReadyToHighlightObjectsOnAutomap())
+		SearchAutomapObject();
+
 	DrawAutomapText();
 }
 

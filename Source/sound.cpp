@@ -186,9 +186,9 @@ void snd_play_snd(TSnd *pSnd, int lVolume, int lPan)
 		return;
 	}
 
-	tc = GetTickCount();
+	tc = InnerGetTickCount();
 	if (tc - pSnd->start_tc < 80) {
-		GetTickCount(); // BUGFIX: unnecessary GetTickCount
+		InnerGetTickCount(); // BUGFIX: unnecessary InnerGetTickCount
 		return;
 	}
 
@@ -252,7 +252,7 @@ TSnd *sound_file_load(const char *path)
 	pSnd = (TSnd *)DiabloAllocPtr(sizeof(TSnd));
 	memset(pSnd, 0, sizeof(TSnd));
 	pSnd->sound_path = path;
-	pSnd->start_tc = GetTickCount() - 80 - 1;
+	pSnd->start_tc = InnerGetTickCount() - 80 - 1;
 
 	wave_file = LoadWaveFile(file, &pSnd->fmt, &pSnd->chunk);
 	if (!wave_file)

@@ -798,7 +798,7 @@ static void DrawObject(int x, int y, int ox, int oy, BOOL pre, int CelSkip, int 
 		return;
 	}
 
-	if (bv == pcursobj)
+	if (isReadyToHighlightObjectsOnFloor(object[bv]) || bv == pcursobj)
 		CelBlitOutline(194, sx, sy, object[bv]._oAnimData, object[bv]._oAnimFrame, object[bv]._oAnimWidth, CelSkip, CelCap);
 	if (object[bv]._oLight) {
 		CelClippedDrawLight(sx, sy, object[bv]._oAnimData, object[bv]._oAnimFrame, object[bv]._oAnimWidth, CelSkip, CelCap);
@@ -865,7 +865,7 @@ static void DrawClippedObject(int x, int y, int ox, int oy, BOOL pre, int CelSki
 		return;
 	}
 
-	if (bv == pcursobj)
+	if (isReadyToHighlightObjectsOnFloor(object[bv]) || bv == pcursobj)
 		CelBlitOutlineSafe(194, sx, sy, object[bv]._oAnimData, object[bv]._oAnimFrame, object[bv]._oAnimWidth, CelSkip, CelCap);
 	if (object[bv]._oLight)
 		CelDrawLightSafe(sx, sy, object[bv]._oAnimData, object[bv]._oAnimFrame, object[bv]._oAnimWidth, CelSkip, CelCap);
@@ -1031,7 +1031,8 @@ static void scrollrt_draw_clipped_dungeon(BYTE *pBuff, int sx, int sy, int dx, i
 					break;
 				}
 				px = dx - pItem->_iAnimWidth2;
-				if (bItem - 1 == pcursitem
+
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -1169,7 +1170,8 @@ static void scrollrt_draw_clipped_dungeon(BYTE *pBuff, int sx, int sy, int dx, i
 					break;
 				}
 				px = dx - pItem->_iAnimWidth2;
-				if (bItem - 1 == pcursitem
+				
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -1526,7 +1528,8 @@ static void scrollrt_draw_clipped_dungeon_2(BYTE *pBuff, int sx, int sy, int row
 					break;
 				}
 				px = dx - pItem->_iAnimWidth2;
-				if (bItem - 1 == pcursitem
+
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -1672,7 +1675,8 @@ static void scrollrt_draw_clipped_dungeon_2(BYTE *pBuff, int sx, int sy, int row
 					break;
 				}
 				px = dx - pItem->_iAnimWidth2;
-				if (bItem - 1 == pcursitem
+
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -1956,7 +1960,8 @@ static void scrollrt_draw_dungeon(BYTE *pBuff, int sx, int sy, int row, int CelC
 					break;
 				}
 				px = dx - pItem->_iAnimWidth2;
-				if (bItem - 1 == pcursitem
+
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -2099,7 +2104,8 @@ static void scrollrt_draw_dungeon(BYTE *pBuff, int sx, int sy, int row, int CelC
 					break;
 				}
 				px = dx - pItem->_iAnimWidth2;
-				if (bItem - 1 == pcursitem
+
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -2541,6 +2547,71 @@ static void DrawZoom(int x, int y)
 #endif
 }
 
+int monstersAlive = 0;
+int objectsUntouched = 0;
+
+bool isIronmanObject(const ObjectStruct &object)
+{
+	switch (object._otype) {
+		case OBJ_CHEST1:
+		case OBJ_CHEST2:
+		case OBJ_CHEST3:
+		case OBJ_TCHEST1:
+		case OBJ_TCHEST2:
+		case OBJ_TCHEST3:
+		case OBJ_SARC:
+		case OBJ_SHRINEL:
+		case OBJ_SHRINER:
+		case OBJ_GOATSHRINE:
+		case OBJ_CAULDRON:
+		case OBJ_BARREL:
+		case OBJ_BARRELEX:
+		case OBJ_BOOKCASEL:
+		case OBJ_BOOKCASER:
+		    if (object._oSelFlag)
+				return true;
+	}
+	return false;
+}
+
+bool isReadyToHighlightObjectsOnAutomap()
+{	
+	return monstersAlive == 0 || objectsUntouched <= 5;
+}
+
+bool isReadyToHighlightObjectsOnFloor(const ObjectStruct &object)
+{	
+	switch (object._otype) {
+	case OBJ_L1LDOOR:
+	case OBJ_L1RDOOR:
+	case OBJ_L2LDOOR:
+	case OBJ_L2RDOOR:
+	case OBJ_L3LDOOR:
+	case OBJ_L3RDOOR:
+		break;
+	default:
+		if (object._oSelFlag)
+			return !automapflag || (GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
+	}
+
+	return false;
+}
+
+bool isReadyToHighlightItemsOnFloor()
+{
+	return !automapflag || (GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
+}
+
+bool isReadyToHighlightItemsOnAutomap()
+{
+	return monstersAlive == 0 && objectsUntouched == 0;
+}
+
+bool isReadyToHighlightMonstersOnAutomap()
+{
+	return monstersAlive <= 5 ;
+}
+
 /**
  * @brief Start rendering of screen, town variation
  * @param StartX Center of view in dPiece coordinate
@@ -2556,6 +2627,55 @@ void DrawView(int StartX, int StartY)
 	if (automapflag) {
 		DrawAutomap();
 	}
+
+	// Draw Ironman Dungeon Status
+	[]() {
+		char desc[256];
+		int nextline = 256;
+
+		monstersAlive = 0;
+
+		for (int mi = 0; mi < nummonsters; ++mi)
+		{
+			const MonsterStruct &m = monster[monstactive[mi]];
+
+			if ( !m._mDelFlag && m.mExp > 0
+			    && m._mx > 0 && m._my > 0
+			    && m._mmode != MM_DEATH
+			    && m.MType != nullptr && m.MType->mtype != MT_GOLEM )
+			{
+				++monstersAlive;
+			}
+		}
+
+		if (monstersAlive <= 5) {
+			sprintf(desc, "Monsters: %i", monstersAlive);
+			PrintGameStr(8, nextline, desc, monstersAlive < 1 ? COL_BLUE : COL_WHITE);
+		}
+
+		nextline += 15;
+
+		objectsUntouched = 0;
+
+		for (int oi = 0; oi < nobjects; ++oi)
+		{
+			const ObjectStruct &o = object[objectactive[oi]];
+
+			if ( !o._oDelFlag && o._ox > 0 && o._oy > 0 ) {
+				if (isIronmanObject(o)) {
+					++objectsUntouched;
+				}
+			}
+		}
+
+		if (objectsUntouched <= 5) {
+			sprintf(desc, "Objects: %i", objectsUntouched);
+			PrintGameStr(8, nextline, desc, objectsUntouched < 1 ? COL_BLUE : COL_WHITE);
+		}
+
+		PlaySoundIfDungeonLevelClearIM();
+	}();
+
 	if (invflag) {
 		DrawInv();
 	} else if (sbookflag) {
@@ -2727,7 +2847,7 @@ void ScrollView()
 void EnableFrameCount()
 {
 	frameflag = frameflag == 0;
-	framestart = GetTickCount();
+	framestart = InnerGetTickCount();
 }
 
 /**
@@ -2741,7 +2861,7 @@ static void DrawFPS()
 
 	if (frameflag && gbActive) {
 		frameend++;
-		tc = GetTickCount();
+		tc = InnerGetTickCount();
 		frames = tc - framestart;
 		if (tc - framestart >= 1000) {
 			framestart = tc;
@@ -2782,13 +2902,13 @@ static void DoBlitScreen(DWORD dwX, DWORD dwY, DWORD dwWdt, DWORD dwHgt)
 		SrcRect.right = SrcRect.left + dwWdt - 1;
 		SrcRect.bottom = SrcRect.top + dwHgt - 1;
 		/// ASSERT: assert(! gpBuffer);
-		dwTicks = GetTickCount();
+		dwTicks = InnerGetTickCount();
 		while (1) {
 			hDDVal = lpDDSPrimary->BltFast(dwX, dwY, lpDDSBackBuf, &SrcRect, DDBLTFAST_WAIT);
 			if (hDDVal == DD_OK) {
 				break;
 			}
-			if (dwTicks - GetTickCount() > 5000) {
+			if (dwTicks - InnerGetTickCount() > 5000) {
 				break;
 			}
 			Sleep(1);
@@ -2891,14 +3011,14 @@ static void DrawMain(int dwHgt, BOOL draw_desc, BOOL draw_hp, BOOL draw_mana, BO
 
 	if (lpDDSBackBuf == NULL) {
 		retry = TRUE;
-		dwTicks = GetTickCount();
+		dwTicks = InnerGetTickCount();
 		while (1) {
 			DDS_desc.dwSize = sizeof(DDS_desc);
 			hDDVal = lpDDSPrimary->Lock(NULL, &DDS_desc, DDLOCK_WRITEONLY | DDLOCK_WAIT, NULL);
 			if (hDDVal == DD_OK) {
 				break;
 			}
-			if (dwTicks - GetTickCount() > 5000) {
+			if (dwTicks - InnerGetTickCount() > 5000) {
 				break;
 			}
 			Sleep(1);
@@ -2912,7 +3032,7 @@ static void DrawMain(int dwHgt, BOOL draw_desc, BOOL draw_hp, BOOL draw_mana, BO
 				retry = FALSE;
 				j_dx_reinit();
 				ysize = SCREEN_HEIGHT;
-				dwTicks = GetTickCount();
+				dwTicks = InnerGetTickCount();
 			}
 		}
 		if (hDDVal == DDERR_SURFACELOST
@@ -3038,6 +3158,33 @@ void DrawAndBlit()
 	} else {
 		T_DrawView(ViewX, ViewY);
 	}
+
+	// Draw Ironman GameSpeed Status
+	[]() {
+		char desc[256];
+
+		const int xPos = 316;
+		const int yPos = 352;
+		const int xShift = 2;
+		const int yShift = 6;
+
+		extern unsigned char CurrentGameSpeed;
+		if (CurrentGameSpeed) {
+			sprintf(desc, "%s", CurrentGameSpeed > 1 ? ">>" : ">");
+			PrintGameStr(CurrentGameSpeed > 1 ? xPos : xPos + xShift, yPos, desc, CurrentGameSpeed > 1 ? COL_RED : COL_BLUE);
+		}
+
+		if (gbMaxPlayers != 1) {
+			extern unsigned char PlayersGameSpeed[MAX_PLRS];
+			for (int i = 0; i < MAX_PLRS; ++i) {
+				if (plr[i].plractive && PlayersGameSpeed[i]) {
+					sprintf(desc, "%s", PlayersGameSpeed[i] > 1 ? ">>" : ">");
+					PrintGameStr(PlayersGameSpeed[i] > 1 ? xPos : xPos + xShift, yPos - yShift - yShift * i, desc, COL_WHITE);
+				}
+			}
+		}
+	}();
+
 	if (ctrlPan) {
 		DrawCtrlPan();
 	}

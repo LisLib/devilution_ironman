@@ -881,7 +881,7 @@ void pfile_update(BOOL force_save)
 	static int save_prev_tc;
 
 	if (gbMaxPlayers != 1) {
-		int tick = GetTickCount();
+		int tick = InnerGetTickCount();
 		if (force_save || tick - save_prev_tc > 60000) {
 			save_prev_tc = tick;
 			pfile_write_hero();

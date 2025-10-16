@@ -5998,7 +5998,7 @@ BOOL GetItemRecord(int nSeed, WORD wCI, int nIndex)
 	int i;
 	DWORD dwTicks;
 
-	dwTicks = GetTickCount();
+	dwTicks = InnerGetTickCount();
 
 	for (i = 0; i < gnNumGetRecords; i++) {
 		if (dwTicks - itemrecord[i].dwTimestamp > 6000) {
@@ -6017,7 +6017,7 @@ void SetItemRecord(int nSeed, WORD wCI, int nIndex)
 {
 	DWORD dwTicks;
 
-	dwTicks = GetTickCount();
+	dwTicks = InnerGetTickCount();
 
 	if (gnNumGetRecords == MAXITEMS) {
 		return;
@@ -6035,7 +6035,7 @@ void PutItemRecord(int nSeed, WORD wCI, int nIndex)
 	int i;
 	DWORD dwTicks;
 
-	dwTicks = GetTickCount();
+	dwTicks = InnerGetTickCount();
 
 	for (i = 0; i < gnNumGetRecords; i++) {
 		if (dwTicks - itemrecord[i].dwTimestamp > 6000) {

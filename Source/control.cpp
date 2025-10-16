@@ -1401,6 +1401,107 @@ void DrawCtrlPan()
 {
 	DrawPanelBox(0, sgbPlrTalkTbl + 16, PANEL_WIDTH, PANEL_HEIGHT, PANEL_X, PANEL_Y);
 	DrawInfoBox();
+
+	auto DrawColorBox = [](int x, int y, int width, int height, char color) -> void {
+		if ((x + width) > SCREEN_WIDTH || x < 0)
+			return;
+
+		if ((y + height) > SCREEN_HEIGHT || y < 0)
+			return;
+
+		assert(gpBuffer);
+		if (gpBuffer == NULL)
+			return;
+
+		x += SCREEN_X;
+		y += SCREEN_Y;
+
+		for (int i = 0; i < height; ++i) {
+			BYTE *dst = &gpBuffer[x + PitchTbl[y + i]];
+
+			for (int j = 0; j < width; ++j)
+				dst[j] = color;
+		}
+	};
+
+	// DrawXpBar
+	if (!talkflag) {
+		struct Shape {
+			int x;
+			int y;
+			int w;
+			int h;
+			char clr;
+		};
+
+		const Shape line = {
+			167, 472, // 167, 472 - bootom of panel
+			310, 2,   // 310, 2
+			PAL16_YELLOW + 5
+		};
+		const Shape back = {
+			line.x - 1, line.y - 1,
+			line.w + 2, line.h + 2,
+			PAL16_GRAY + 14
+		};
+		const Shape bound = {
+			back.x - 1, back.y - 1,
+			back.w + 2, back.h + 2,
+			PAL16_YELLOW + 4
+		};
+		const Shape sep = {
+			line.x + line.w / 10, back.y,
+			1, back.h,
+			PAL16_YELLOW + 10
+		};
+
+		DrawColorBox(bound.x, bound.y, bound.w, bound.h, bound.clr);
+		DrawColorBox(back.x, back.y, back.w, back.h, back.clr);
+
+		if (plr[myplr]._pLevel < MAXCHARLEVEL) {
+			extern int ExpLvlsTbl[MAXCHARLEVEL];
+			int prevExp = ExpLvlsTbl[plr[myplr]._pLevel - 1];
+			int nextExp = ExpLvlsTbl[plr[myplr]._pLevel] - prevExp;
+
+			int curExp = plr[myplr]._pExperience - prevExp;
+			int width = (int)((float)line.w * ((float)curExp / (float)nextExp));
+
+			if (width > line.w)
+				width = line.w;
+
+			DrawColorBox(line.x, line.y, width, line.h, line.clr - width * 5 / line.w);
+		}
+
+		int step = line.w / 10;
+		for (int i = 0; i < 9; ++i)
+			DrawColorBox(sep.x + i * step, sep.y, sep.w, sep.h, sep.clr);
+	}
+
+
+	{
+		auto GetTextWitdh = [](const char *str) {
+			BYTE c;
+			int strWidth = 0;
+			while (*str) {
+				c = gbFontTransTbl[(BYTE)*str++];
+				strWidth += fontkern[fontframe[c]];
+			}
+			return strWidth;
+		};
+
+		char desc[256];
+
+		int clvl_xPos = 163;
+		int clvl_yPos = 478;
+		sprintf(desc, "%i", plr[myplr]._pLevel);
+		clvl_xPos -= GetTextWitdh(desc);
+		PrintGameStr(clvl_xPos, clvl_yPos, desc, COL_GOLD);
+
+		int nextClvl_xPos = 482;
+		int nextClvl_yPos = 478;
+		sprintf(desc, "%i", plr[myplr]._pLevel + 1);
+		PrintGameStr(nextClvl_xPos, nextClvl_yPos, desc, COL_GOLD);
+	}
 }
 
 /**

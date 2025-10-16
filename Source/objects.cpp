@@ -64,6 +64,82 @@ const char *const shrinestrs[NUM_SHRINETYPE] = {
 	"Murphy's",
 #endif
 };
+const char *const shrineEffectStrsBuff[NUM_SHRINETYPE] = {
+	"+5 to one attribute", // "Mysterious",
+	"+10 dur to all equipped", // "Hidden",
+	"+2 AC to all armor and", // "Gloomy",
+	"+1 max damage to all", // "Weird",
+	"Casts a Mana Shield", // "Magical",
+	"Restores charges", // "Stone",
+	"Restores all items", // "Religious",
+	"All spells gain 1 slvl", // "Enchanted",
+	"Refills chests", // "Thaumaturgic",
+	"+2 slvl to Firebolt and", // "Fascinating",
+	"Restores mana", // "Cryptic",
+	"Casts a Mana Shield", // "Magical",
+	"All potions become", // "Eldritch",
+	"+2 magic", // "Eerie",
+	"Restores health and mana", // "Divine",
+	"Casts a Phasing spell", // "Holy",
+	"+2 slvl to Charged Bolt", // "Sacred",
+	"Give a small amount", // "Spiritual",
+	"All other players get", // "Spooky",
+	"+2 dexterity", // "Abandoned",
+	"+2 strength", // "Creepy",
+	"+2 vitality", // "Quiet",
+	"Give complete map", // "Secluded",
+	"+2 slvl to Holy Bolt", // "Ornate",
+	"Indentifies all items", // "Glimmering",
+	"Others get +1 to one", // "Tainted",
+#ifdef HELLFIRE
+	"Oily",
+	"Glowing",
+	"Mendicant's",
+	"Sparkling",
+	"Town",
+	"Shimmering",
+	"Solar",
+	"Murphy's",
+#endif
+};
+const char *const shrineEffectStrsNerf[NUM_SHRINETYPE] = {
+	"-1 to all other", // "Mysterious",
+	"-20 dur to rnd equipped", // "Hidden",
+	"-1 max DMG to all weapons", // "Gloomy",
+	" weapons in inventory", // "Weird",
+	" spell", // "Magical",
+	" in all staves", // "Stone",
+	" to full durability",// "Religious",
+	"and random spell lose 2", // "Enchanted",
+	" on current level", // "Thaumaturgic",
+	"lose 10% of base mana", // "Fascinating",
+	" and casts a Nova spell", // "Cryptic",
+	" spell", // "Magical",
+	" rejuvenation potions", // "Eldritch",
+	"", // "Eerie",
+	"", // "Divine",
+	"", // "Holy",
+	"lose 10% of base mana", // "Sacred",
+	" of gold", // "Spiritual",
+	" life and mana restored", // "Spooky",
+	"", // "Abandoned",
+	"", // "Creepy",
+	"", // "Quiet",
+	" of current level", // "Secluded",
+	"lose 10% of base mana", // "Ornate",
+	" in your inventory", // "Glimmering",
+	"attribute and -1 to all", // "Tainted",
+#ifdef HELLFIRE
+	"Oily",
+	"Glowing",
+	"Mendicant's",
+	"Sparkling",
+	"Town",
+	"Shimmering",
+	"Solar",
+	"Murphy's",
+#endif
+};
 /** Specifies the minimum dungeon level on which each shrine will appear. */
 char shrinemin[NUM_SHRINETYPE] = {
 	1, // Mysterious
@@ -5320,7 +5396,15 @@ void GetObjectStr(int i)
 	case OBJ_SHRINEL:
 	case OBJ_SHRINER:
 		sprintf(tempstr, "%s Shrine", shrinestrs[object[i]._oVar1]);
-		strcpy(infostr, tempstr);
+		AddPanelString(tempstr, TRUE);
+
+		sprintf(tempstr, "%s", shrineEffectStrsBuff[object[i]._oVar1]);
+		AddPanelString(tempstr, TRUE);
+
+		sprintf(tempstr, "%s", shrineEffectStrsNerf[object[i]._oVar1]);
+
+		if (tempstr[0] != '\0')
+			AddPanelString(tempstr, TRUE);
 		break;
 	case OBJ_SKELBOOK:
 		strcpy(infostr, "Skeleton Tome");

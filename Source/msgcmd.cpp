@@ -59,7 +59,7 @@ void msgcmd_send_chat()
 
 	if (msg) {
 		static DWORD sgdwMsgCmdTimer;
-		tick = GetTickCount();
+		tick = InnerGetTickCount();
 		if (tick - sgdwMsgCmdTimer >= 2000) {
 			sgdwMsgCmdTimer = tick;
 			SNetSendServerChatCommand(msg->command);
