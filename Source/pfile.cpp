@@ -221,6 +221,52 @@ static BOOL pfile_read_hero(HANDLE archive, PkPlayerStruct *pPack)
 	}
 }
 
+static BOOL pfile_read_timer(HANDLE archive, PkTimerStruct *pPack)
+{
+	HANDLE file;
+	BOOL decoded;
+	DWORD dwlen, nSize;
+	BYTE *buf;
+
+	if (!SFileOpenFileEx(archive, "timer", 0, &file)) {
+		return FALSE;
+	} else {
+		buf = NULL;
+		BOOL ret = FALSE;
+		char password[16] = PASSWORD_SINGLE;
+		nSize = 16;
+
+		if (gbMaxPlayers > 1)
+			strcpy(password, PASSWORD_MULTI);
+
+		dwlen = SFileGetFileSize(file, NULL);
+		if (dwlen) {
+			DWORD read;
+			buf = DiabloAllocPtr(dwlen);
+			if (SFileReadFile(file, buf, dwlen, &read, NULL)) {
+				decoded = TRUE;
+				read = codec_decode(buf, dwlen, password);
+
+				if (!read && gbMaxPlayers > 1) {
+					GetComputerName(password, &nSize);
+					if (SFileSetFilePointer(file, 0, NULL, FILE_BEGIN) || !SFileReadFile(file, buf, dwlen, &read, NULL))
+						decoded = FALSE;
+					else
+						read = codec_decode(buf, dwlen, password);
+				}
+				if (decoded && read == sizeof(*pPack)) {
+					memcpy(pPack, buf, sizeof(*pPack));
+					ret = TRUE;
+				}
+			}
+		}
+		if (buf)
+			mem_free_dbg(buf);
+		SFileCloseFile(file);
+		return ret;
+	}
+}
+
 static void pfile_encode_hero(const PkPlayerStruct *pPack)
 {
 	BYTE *packed;
@@ -311,6 +357,39 @@ void pfile_write_hero()
 		PackPlayer(&pkplr, myplr, gbMaxPlayers == 1);
 #endif
 		pfile_encode_hero(&pkplr);
+		pfile_flush(gbMaxPlayers == 1, save_num);
+	}
+}
+
+void pfile_write_timer()
+{
+	DWORD save_num;
+	PkTimerStruct pktmr;
+
+	save_num = pfile_get_save_num_from_name(plr[myplr]._pName);
+	if (pfile_open_archive(TRUE, save_num)) {
+
+		{
+			extern long long gameTimer;
+			extern long long realTimer;
+			pktmr.gameTimer = gameTimer;
+			pktmr.realTimer = realTimer;
+		}
+
+		{
+			char password[16] = PASSWORD_SINGLE;
+
+			if (gbMaxPlayers > 1)
+				strcpy(password, PASSWORD_MULTI);
+
+			DWORD packed_len = codec_get_encoded_len(sizeof(pktmr));
+			BYTE * packed = (BYTE *)DiabloAllocPtr(packed_len);
+			memcpy(packed, &pktmr, sizeof(pktmr));
+			codec_encode(packed, sizeof(pktmr), packed_len, password);
+			mpqapi_write_file("timer", packed, packed_len);
+			mem_free_dbg(packed);
+		}
+
 		pfile_flush(gbMaxPlayers == 1, save_num);
 	}
 }
@@ -486,6 +565,18 @@ BOOL __stdcall pfile_ui_set_hero_infos(BOOL(__stdcall *ui_add_hero_info)(_uihero
 				game_2_ui_player(plr, &uihero, pfile_archive_contains_game(archive, i));
 				ui_add_hero_info(&uihero);
 			}
+
+			extern long long gameTimer;
+			extern long long realTimer;
+
+			PkTimerStruct pktmr;
+			if (!pfile_read_timer(archive, &pktmr)) {
+				gameTimer = 0;
+				realTimer = 0;
+			} else {
+				UnPackTimer(&pktmr);
+			}
+
 			pfile_SFileCloseArchive(archive);
 		}
 	}
@@ -609,9 +700,16 @@ BOOL __stdcall pfile_get_file_name(DWORD lvl, char *dst)
 	const char *fmt;
 
 	if (gbMaxPlayers > 1) {
-		if (lvl)
+		switch (lvl) {
+		case 0:
+			fmt = "hero";
+			break;
+		case 1:
+			fmt = "timer";
+			break;
+		default:
 			return FALSE;
-		fmt = "hero";
+		}
 	} else {
 		if (lvl < NUMLEVELS)
 			fmt = "perml%02d";
@@ -622,6 +720,8 @@ BOOL __stdcall pfile_get_file_name(DWORD lvl, char *dst)
 			fmt = "game";
 		else if (lvl == NUMLEVELS * 2 + 1)
 			fmt = "hero";
+		else if (lvl == NUMLEVELS * 2 + 2)
+			fmt = "timer";
 		else
 			return FALSE;
 	}
@@ -661,6 +761,21 @@ void pfile_read_player_from_save()
 		app_fatal("Unable to load character");
 
 	UnPackPlayer(&pkplr, myplr, FALSE);
+
+	extern long long gameTimer;
+	extern long long realTimer;
+
+	PkTimerStruct pktmr;
+	if (!pfile_read_timer(archive, &pktmr))
+	{
+		gameTimer = 0;
+		realTimer = 0;
+	}
+	else
+	{
+		UnPackTimer(&pktmr);
+	}
+
 	gbValidSaveFile = pfile_archive_contains_game(archive, save_num);
 	pfile_SFileCloseArchive(archive);
 }
@@ -841,6 +956,18 @@ BYTE *pfile_read(const char *pszName, DWORD *pdwLen)
 	buf = DiabloAllocPtr(*pdwLen);
 	if (!SFileReadFile(save, buf, *pdwLen, &nread, NULL))
 		app_fatal("Unable to read save file");
+
+	extern long long gameTimer;
+	extern long long realTimer;
+
+	PkTimerStruct pktmr;
+	if (!pfile_read_timer(archive, &pktmr)) {
+		gameTimer = 0;
+		realTimer = 0;
+	} else {
+		UnPackTimer(&pktmr);
+	}
+
 	SFileCloseFile(save);
 	pfile_SFileCloseArchive(archive);
 
@@ -885,6 +1012,7 @@ void pfile_update(BOOL force_save)
 		if (force_save || tick - save_prev_tc > 60000) {
 			save_prev_tc = tick;
 			pfile_write_hero();
+			pfile_write_timer();
 		}
 	}
 }

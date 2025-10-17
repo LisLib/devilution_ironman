@@ -400,6 +400,7 @@ static void run_game_loop(unsigned int uMsg)
 
 	if (gbMaxPlayers > 1) {
 		pfile_write_hero();
+		pfile_write_timer();
 	}
 
 	pfile_flush_W();
@@ -1676,8 +1677,10 @@ LRESULT CALLBACK GM_Game(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_DIABTOWNWARP:
 	case WM_DIABTWARPUP:
 	case WM_DIABRETOWN:
-		if (gbMaxPlayers > 1)
+		if (gbMaxPlayers > 1) {
 			pfile_write_hero();
+			pfile_write_timer();
+		}
 		nthread_ignore_mutex(TRUE);
 		PaletteFadeOut(8);
 		sound_stop();

@@ -1479,16 +1479,6 @@ void DrawCtrlPan()
 
 
 	{
-		auto GetTextWitdh = [](const char *str) {
-			BYTE c;
-			int strWidth = 0;
-			while (*str) {
-				c = gbFontTransTbl[(BYTE)*str++];
-				strWidth += fontkern[fontframe[c]];
-			}
-			return strWidth;
-		};
-
 		char desc[256];
 
 		int clvl_xPos = 163;
@@ -2029,6 +2019,17 @@ void PrintGameStr(int x, int y, const char *str, int color)
 			PrintChar(off, c, color);
 		off += fontkern[c] + 1;
 	}
+}
+
+int GetTextWitdh(const char *str) {
+	BYTE c;
+	int strWidth = 0;
+	while (*str) {
+		c = gbFontTransTbl[(BYTE)*str++];
+		c = fontframe[c];
+		strWidth += fontkern[c] + 1;
+	}
+	return strWidth;
 }
 
 /**

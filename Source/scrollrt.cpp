@@ -3185,6 +3185,52 @@ void DrawAndBlit()
 		}
 	}();
 
+	// Draw Ironman GameSpeed Timer
+	auto drawTimer = [](long long timer, int x, int y) {
+		char desc[256];
+		long long div1000 = timer / 1000;
+
+		int hours = div1000 / 3600;
+		int minutes = div1000 / 60 % 60;
+		int seconds = div1000 % 60;
+
+		sprintf(desc, "%.2d:%.2d:%.2d", hours, minutes, seconds);
+		int strWidth = GetTextWitdh(desc);
+		PrintGameStr(x - strWidth, y, desc, COL_WHITE);
+	};
+
+	auto drawDeltaTime = [](long long time, int x, int y) {
+		char desc[256];
+		long long div1000 = time / 1000;
+
+		int hours = div1000 / 3600;
+		int minutes = div1000 / 60 % 60;
+		int seconds = div1000 % 60;
+
+		if (hours)
+			sprintf(desc, "+%.2d:%.2d:%.2ds", hours, minutes, seconds);
+		else if (minutes)
+			sprintf(desc, "+%.2d:%.2d", minutes, seconds);
+		else if (seconds)
+			sprintf(desc, "+%.2d", seconds);
+		else
+			return;
+
+		int strWidth = GetTextWitdh(desc);
+		PrintGameStr(x - strWidth, y, desc, COL_RED);
+	};
+
+	
+	{
+		extern long long gameTimer;
+		extern long long realTimer;
+
+		const int xPos = 630;
+		const int yPos = 20;
+		drawTimer(realTimer, xPos, yPos);
+		drawDeltaTime(gameTimer - realTimer, xPos, yPos + 15);
+	}
+
 	if (ctrlPan) {
 		DrawCtrlPan();
 	}

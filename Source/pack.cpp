@@ -305,3 +305,11 @@ void UnPackPlayer(PkPlayerStruct *pPack, int pnum, BOOL killok)
 	pPlayer->pManaShield = pPack->pManaShield;
 #endif
 }
+
+void UnPackTimer(PkTimerStruct *pPack)
+{
+	extern long long gameTimer;
+	extern long long realTimer;
+	gameTimer = pPack->gameTimer;
+	realTimer = pPack->realTimer;
+}

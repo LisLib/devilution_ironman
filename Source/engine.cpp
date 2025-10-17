@@ -4156,6 +4156,9 @@ void changeGameSpeed()
 	NetSendCmdParam3(TRUE, CMD_CHANGEGAMESPEED, (DWORD)SelectedGameSpeed, 0, 0);
 }
 
+long long gameTimer = 0;
+long long realTimer = 0;
+
 DWORD InnerGetTickCount()
 {
 	static long long prev = GetTickCount();
@@ -4165,6 +4168,7 @@ DWORD InnerGetTickCount()
 	DWORD cur = GetTickCount();
 
 	delta = cur - prev;
+	realTimer += delta;
 	prev = cur;
 
 	CurrentGameSpeed = SelectedGameSpeed;
@@ -4176,7 +4180,11 @@ DWORD InnerGetTickCount()
 		}
 	}
 
-	tickCounter += delta + delta / 4 * CurrentGameSpeed;
+	long long currentDelta = delta + delta / 4 * CurrentGameSpeed;
+
+	gameTimer += currentDelta;
+
+	tickCounter += currentDelta;
 
 	return tickCounter;
 }
