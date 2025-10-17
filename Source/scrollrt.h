@@ -22,6 +22,7 @@ void DrawMissile(int x, int y, int sx, int sy, int CelSkip, int CelCap, BOOL pre
 void DrawClippedMissile(int x, int y, int sx, int sy, int CelSkip, int CelCap, BOOL pre);
 void DrawDeadPlayer(int x, int y, int sx, int sy, int CelSkip, int CelCap, BOOL clipped);
 void DrawView(int StartX, int StartY);
+
 void ClearScreenBuffer();
 #ifdef _DEBUG
 void ScrollView();
@@ -29,5 +30,19 @@ void EnableFrameCount();
 #endif
 void scrollrt_draw_game_screen(BOOL draw_cursor);
 void DrawAndBlit();
+
+bool isIronmanObject(const ObjectStruct &object);
+bool isSelectableObject(const ObjectStruct &object);
+bool isReadyToHighlightObjectsOnAutomap();
+bool isReadyToHighlightObjectsOnFloor(const ObjectStruct &object);
+bool isReadyToHighlightItemsOnFloor();
+bool isReadyToHighlightItemsOnAutomap();
+bool isReadyToHighlightMonstersOnAutomap();
+
+void DrawTimer();
+void DrawIromanCounters();
+void DrawGameSpeedStatus();
+void DrawXpBar();
+void DrawColorBox(int x, int y, int width, int height, char color);
 
 #endif /* __SCROLLRT_H__ */

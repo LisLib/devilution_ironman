@@ -1401,6 +1401,8 @@ void DrawCtrlPan()
 {
 	DrawPanelBox(0, sgbPlrTalkTbl + 16, PANEL_WIDTH, PANEL_HEIGHT, PANEL_X, PANEL_Y);
 	DrawInfoBox();
+
+	if (!talkflag) DrawXpBar();
 }
 
 /**
@@ -1928,6 +1930,17 @@ void PrintGameStr(int x, int y, const char *str, int color)
 			PrintChar(off, c, color);
 		off += fontkern[c] + 1;
 	}
+}
+
+int GetTextWitdh(const char *str) {
+	BYTE c;
+	int strWidth = 0;
+	while (*str) {
+		c = gbFontTransTbl[(BYTE)*str++];
+		c = fontframe[c];
+		strWidth += fontkern[c] + 1;
+	}
+	return strWidth;
 }
 
 /**

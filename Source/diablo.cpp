@@ -310,6 +310,7 @@ static void start_game(unsigned int uMsg)
 {
 	zoomflag = TRUE;
 	cineflag = FALSE;
+
 	InitCursor();
 	InitLightTable();
 	LoadDebugGFX();
@@ -321,6 +322,11 @@ static void start_game(unsigned int uMsg)
 	sgnTimeoutCurs = CURSOR_NONE;
 	sgbMouseDown = CLICK_NONE;
 	track_repeat_walk(FALSE);
+
+	{
+		ShowGameTimerFlag = true;
+		ShowGameSpeedFlag = true;
+	}
 }
 
 static void free_game()
@@ -400,6 +406,7 @@ static void run_game_loop(unsigned int uMsg)
 
 	if (gbMaxPlayers > 1) {
 		pfile_write_hero();
+		pfile_write_timer();
 	}
 
 	pfile_flush_W();
@@ -646,7 +653,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 #endif
 
 	ShowCursor(FALSE);
-	srand(GetTickCount());
+	srand(InnerGetTickCount());
 	InitHash();
 #ifdef HELLFIRE
 	alloc_plr();
@@ -1138,12 +1145,13 @@ static void PressKey(int vkey)
 			doom_close();
 		}
 	}
-#ifdef _DEBUG
 	else if (vkey == VK_F2) {
+		ShowGameTimerFlag = !ShowGameTimerFlag;
 	}
-#endif
-#ifdef _DEBUG
 	else if (vkey == VK_F3) {
+#ifndef _DEBUG
+		ShowGameSpeedFlag = !ShowGameSpeedFlag;
+#else
 		if (pcursitem != -1) {
 			sprintf(
 			    tempstr,
@@ -1155,8 +1163,9 @@ static void PressKey(int vkey)
 		}
 		sprintf(tempstr, "Numitems : %i", numitems);
 		NetSendCmdString(1 << myplr, tempstr);
-	}
+
 #endif
+	}
 #ifdef _DEBUG
 	else if (vkey == VK_F4) {
 		PrintDebugQuest();
@@ -1370,6 +1379,19 @@ static void PressChar(WPARAM vkey)
 		if (automapflag) {
 			AutomapZoomOut();
 		}
+		return;
+#ifndef _DEBUG
+	case '~':
+	case '`':
+	case 'D':
+	case 'd':
+	case 'E':
+	case 'e':
+#endif
+	case 'X':
+	case 'x':
+		extern void changeGameSpeed();
+		changeGameSpeed();
 		return;
 	case 'v':
 #ifndef HELLFIRE
@@ -1599,6 +1621,8 @@ LRESULT CALLBACK GM_Game(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (PressSysKey(wParam))
 			return 0;
 		break;
+	case WM_SYSKEYUP:
+		break;
 	case WM_SYSCOMMAND:
 		if (wParam == SC_CLOSE) {
 			gbRunGame = FALSE;
@@ -1661,8 +1685,10 @@ LRESULT CALLBACK GM_Game(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_DIABTOWNWARP:
 	case WM_DIABTWARPUP:
 	case WM_DIABRETOWN:
-		if (gbMaxPlayers > 1)
+		if (gbMaxPlayers > 1) {
 			pfile_write_hero();
+			pfile_write_timer();
+		}
 		nthread_ignore_mutex(TRUE);
 		PaletteFadeOut(8);
 		sound_stop();
@@ -2164,7 +2190,7 @@ void diablo_color_cyc_logic()
 {
 	DWORD tc;
 
-	tc = GetTickCount();
+	tc = InnerGetTickCount();
 	if (tc - color_cycle_timer >= 50) {
 		color_cycle_timer = tc;
 #ifndef HELLFIRE

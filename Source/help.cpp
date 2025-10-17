@@ -373,6 +373,9 @@ const char gszHelpText[] = {
 #else
 	"$Keyboard Shortcuts:|"
 	"F1:    Open Help Screen|"
+	"F2:    Show/Hide game timer|"
+	"F3:    Show/Hide game speed|"
+	"E, D, X, '~': Toggle game speed|"
 	"Esc:   Display Main Menu|"
 	"Tab:   Display Auto-map|"
 	"Space: Hide all info screens|"

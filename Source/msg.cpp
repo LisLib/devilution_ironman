@@ -112,7 +112,7 @@ static int msg_wait_for_turns()
 		nthread_send_and_recv_turn(0, 0);
 		if (!SNetGetOwnerTurnsWaiting(&turns) && DERROR() == STORM_ERROR_NOT_IN_GAME)
 			return 100;
-		if (GetTickCount() - sgdwOwnerWait <= 2000 && turns < gdwTurnsInTransit)
+		if (InnerGetTickCount() - sgdwOwnerWait <= 2000 && turns < gdwTurnsInTransit)
 			return 0;
 		sgbDeltaChunks++;
 	}
@@ -145,7 +145,7 @@ BOOL msg_wait_resync()
 	sgnCurrMegaPlayer = -1;
 	sgbRecvCmd = CMD_DLEVEL_END;
 	gbBufferMsgs = 1;
-	sgdwOwnerWait = GetTickCount();
+	sgdwOwnerWait = InnerGetTickCount();
 	success = UiProgressDialog(ghMainWnd, "Waiting for game data...", 1, msg_wait_for_turns, 20);
 	gbBufferMsgs = 0;
 	if (!success) {
@@ -1077,7 +1077,7 @@ void NetSendCmdGItem2(BOOL usonly, BYTE bCmd, BYTE mast, BYTE pnum, TCmdGItem *p
 		return;
 	}
 
-	int ticks = GetTickCount();
+	int ticks = InnerGetTickCount();
 	if (cmd.dwTime == 0) {
 		cmd.dwTime = ticks;
 	} else if (ticks - cmd.dwTime > 5000) {
@@ -1100,7 +1100,7 @@ BOOL NetSendCmdReq2(BYTE bCmd, BYTE mast, BYTE pnum, TCmdGItem *p)
 	cmd.bPnum = pnum;
 	cmd.bMaster = mast;
 
-	int ticks = GetTickCount();
+	int ticks = InnerGetTickCount();
 	if (cmd.dwTime == 0)
 		cmd.dwTime = ticks;
 	else if (ticks - cmd.dwTime > 5000)
@@ -1340,7 +1340,7 @@ static void __cdecl msg_errorf(const char *pszFmt, ...)
 	va_list va;
 
 	va_start(va, pszFmt);
-	ticks = GetTickCount();
+	ticks = InnerGetTickCount();
 	if (ticks - msg_err_timer >= 5000) {
 		msg_err_timer = ticks;
 		vsprintf(msg, pszFmt, va);
@@ -2615,6 +2615,18 @@ static DWORD On_OPENCRYPT(TCmd *pCmd, int pnum)
 }
 #endif
 
+// Diablo 1 Iroman patch
+static DWORD On_CHANGEGAMESPEED(TCmd *pCmd, int pnum)
+{
+	TCmdParam3 *p = (TCmdParam3 *)pCmd;
+
+	extern unsigned char PlayersGameSpeed[MAX_PLRS];
+
+	PlayersGameSpeed[pnum] = (unsigned char)(p->wParam1);
+	
+	return sizeof(*p);
+}
+
 DWORD ParseCmd(int pnum, TCmd *pCmd)
 {
 	sbLastCmd = pCmd->bCmd;
@@ -2781,6 +2793,8 @@ DWORD ParseCmd(int pnum, TCmd *pCmd)
 	case CMD_OPENCRYPT:
 		return On_OPENCRYPT(pCmd, pnum);
 #endif
+	case CMD_CHANGEGAMESPEED:
+		return On_CHANGEGAMESPEED(pCmd, pnum);
 	}
 
 	if (pCmd->bCmd < CMD_DLEVEL_0 || pCmd->bCmd > CMD_DLEVEL_END) {

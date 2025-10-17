@@ -798,7 +798,7 @@ static void DrawObject(int x, int y, int ox, int oy, BOOL pre, int CelSkip, int 
 		return;
 	}
 
-	if (bv == pcursobj)
+	if (isReadyToHighlightObjectsOnFloor(object[bv]) || bv == pcursobj)
 		CelBlitOutline(194, sx, sy, object[bv]._oAnimData, object[bv]._oAnimFrame, object[bv]._oAnimWidth, CelSkip, CelCap);
 	if (object[bv]._oLight) {
 		CelClippedDrawLight(sx, sy, object[bv]._oAnimData, object[bv]._oAnimFrame, object[bv]._oAnimWidth, CelSkip, CelCap);
@@ -865,7 +865,7 @@ static void DrawClippedObject(int x, int y, int ox, int oy, BOOL pre, int CelSki
 		return;
 	}
 
-	if (bv == pcursobj)
+	if (isReadyToHighlightObjectsOnFloor(object[bv]) || bv == pcursobj)
 		CelBlitOutlineSafe(194, sx, sy, object[bv]._oAnimData, object[bv]._oAnimFrame, object[bv]._oAnimWidth, CelSkip, CelCap);
 	if (object[bv]._oLight)
 		CelDrawLightSafe(sx, sy, object[bv]._oAnimData, object[bv]._oAnimFrame, object[bv]._oAnimWidth, CelSkip, CelCap);
@@ -1031,7 +1031,8 @@ static void scrollrt_draw_clipped_dungeon(BYTE *pBuff, int sx, int sy, int dx, i
 					break;
 				}
 				px = dx - pItem->_iAnimWidth2;
-				if (bItem - 1 == pcursitem
+
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -1169,7 +1170,8 @@ static void scrollrt_draw_clipped_dungeon(BYTE *pBuff, int sx, int sy, int dx, i
 					break;
 				}
 				px = dx - pItem->_iAnimWidth2;
-				if (bItem - 1 == pcursitem
+				
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -1526,7 +1528,8 @@ static void scrollrt_draw_clipped_dungeon_2(BYTE *pBuff, int sx, int sy, int row
 					break;
 				}
 				px = dx - pItem->_iAnimWidth2;
-				if (bItem - 1 == pcursitem
+
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -1672,7 +1675,8 @@ static void scrollrt_draw_clipped_dungeon_2(BYTE *pBuff, int sx, int sy, int row
 					break;
 				}
 				px = dx - pItem->_iAnimWidth2;
-				if (bItem - 1 == pcursitem
+
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -1956,7 +1960,8 @@ static void scrollrt_draw_dungeon(BYTE *pBuff, int sx, int sy, int row, int CelC
 					break;
 				}
 				px = dx - pItem->_iAnimWidth2;
-				if (bItem - 1 == pcursitem
+
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -2099,7 +2104,8 @@ static void scrollrt_draw_dungeon(BYTE *pBuff, int sx, int sy, int row, int CelC
 					break;
 				}
 				px = dx - pItem->_iAnimWidth2;
-				if (bItem - 1 == pcursitem
+
+				if (isReadyToHighlightItemsOnFloor() || bItem - 1 == pcursitem
 #ifdef HELLFIRE
 				    || AutoMapShowItems == TRUE
 #endif
@@ -2541,6 +2547,81 @@ static void DrawZoom(int x, int y)
 #endif
 }
 
+int monstersAlive = 0;
+int objectsUntouched = 0;
+
+bool isIronmanObject(const ObjectStruct &object)
+{
+	switch (object._otype) {
+		case OBJ_CHEST1:
+		case OBJ_CHEST2:
+		case OBJ_CHEST3:
+		case OBJ_TCHEST1:
+		case OBJ_TCHEST2:
+		case OBJ_TCHEST3:
+		case OBJ_SARC:
+		case OBJ_SHRINEL:
+		case OBJ_SHRINER:
+		case OBJ_GOATSHRINE:
+		case OBJ_CAULDRON:
+		case OBJ_BARREL:
+		case OBJ_BARRELEX:
+		case OBJ_BOOKCASEL:
+		case OBJ_BOOKCASER:
+			return true;
+	}
+	return false;
+}
+
+bool isSelectableObject(const ObjectStruct &object)
+{
+	if (!object._oDelFlag
+		&& object._oSelFlag
+	    && object._ox > 0
+		&& object._oy > 0)
+		return true;
+
+	return false;
+}
+
+bool isReadyToHighlightObjectsOnAutomap()
+{	
+	return monstersAlive == 0 || objectsUntouched <= 5;
+}
+
+bool isReadyToHighlightObjectsOnFloor(const ObjectStruct &object)
+{	
+	switch (object._otype) {
+	case OBJ_L1LDOOR:
+	case OBJ_L1RDOOR:
+	case OBJ_L2LDOOR:
+	case OBJ_L2RDOOR:
+	case OBJ_L3LDOOR:
+	case OBJ_L3RDOOR:
+		break;
+	default:
+		if (object._oSelFlag)
+			return !automapflag || (GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
+	}
+
+	return false;
+}
+
+bool isReadyToHighlightItemsOnFloor()
+{
+	return !automapflag || (GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
+}
+
+bool isReadyToHighlightItemsOnAutomap()
+{
+	return monstersAlive == 0 && objectsUntouched == 0;
+}
+
+bool isReadyToHighlightMonstersOnAutomap()
+{
+	return monstersAlive <= 5 ;
+}
+
 /**
  * @brief Start rendering of screen, town variation
  * @param StartX Center of view in dPiece coordinate
@@ -2556,6 +2637,15 @@ void DrawView(int StartX, int StartY)
 	if (automapflag) {
 		DrawAutomap();
 	}
+
+	DrawIromanCounters();
+
+	if(ShowGameTimerFlag)
+		DrawTimer();
+
+	if (ShowGameSpeedFlag)
+		DrawGameSpeedStatus();
+
 	if (invflag) {
 		DrawInv();
 	} else if (sbookflag) {
@@ -2727,7 +2817,7 @@ void ScrollView()
 void EnableFrameCount()
 {
 	frameflag = frameflag == 0;
-	framestart = GetTickCount();
+	framestart = InnerGetTickCount();
 }
 
 /**
@@ -2741,7 +2831,7 @@ static void DrawFPS()
 
 	if (frameflag && gbActive) {
 		frameend++;
-		tc = GetTickCount();
+		tc = InnerGetTickCount();
 		frames = tc - framestart;
 		if (tc - framestart >= 1000) {
 			framestart = tc;
@@ -2782,13 +2872,13 @@ static void DoBlitScreen(DWORD dwX, DWORD dwY, DWORD dwWdt, DWORD dwHgt)
 		SrcRect.right = SrcRect.left + dwWdt - 1;
 		SrcRect.bottom = SrcRect.top + dwHgt - 1;
 		/// ASSERT: assert(! gpBuffer);
-		dwTicks = GetTickCount();
+		dwTicks = InnerGetTickCount();
 		while (1) {
 			hDDVal = lpDDSPrimary->BltFast(dwX, dwY, lpDDSBackBuf, &SrcRect, DDBLTFAST_WAIT);
 			if (hDDVal == DD_OK) {
 				break;
 			}
-			if (dwTicks - GetTickCount() > 5000) {
+			if (dwTicks - InnerGetTickCount() > 5000) {
 				break;
 			}
 			Sleep(1);
@@ -2891,14 +2981,14 @@ static void DrawMain(int dwHgt, BOOL draw_desc, BOOL draw_hp, BOOL draw_mana, BO
 
 	if (lpDDSBackBuf == NULL) {
 		retry = TRUE;
-		dwTicks = GetTickCount();
+		dwTicks = InnerGetTickCount();
 		while (1) {
 			DDS_desc.dwSize = sizeof(DDS_desc);
 			hDDVal = lpDDSPrimary->Lock(NULL, &DDS_desc, DDLOCK_WRITEONLY | DDLOCK_WAIT, NULL);
 			if (hDDVal == DD_OK) {
 				break;
 			}
-			if (dwTicks - GetTickCount() > 5000) {
+			if (dwTicks - InnerGetTickCount() > 5000) {
 				break;
 			}
 			Sleep(1);
@@ -2912,7 +3002,7 @@ static void DrawMain(int dwHgt, BOOL draw_desc, BOOL draw_hp, BOOL draw_mana, BO
 				retry = FALSE;
 				j_dx_reinit();
 				ysize = SCREEN_HEIGHT;
-				dwTicks = GetTickCount();
+				dwTicks = InnerGetTickCount();
 			}
 		}
 		if (hDDVal == DDERR_SURFACELOST
@@ -3038,6 +3128,7 @@ void DrawAndBlit()
 	} else {
 		T_DrawView(ViewX, ViewY);
 	}
+
 	if (ctrlPan) {
 		DrawCtrlPan();
 	}
@@ -3070,4 +3161,216 @@ void DrawAndBlit()
 	drawmanaflag = FALSE;
 	drawbtnflag = FALSE;
 	drawsbarflag = FALSE;
+}
+
+void DrawTimer()
+{
+	auto drawTimer = [](long long timer, int x, int y) {
+		char desc[256];
+		long long div1000 = timer / 1000;
+
+		int hours = div1000 / 3600;
+		int minutes = div1000 / 60 % 60;
+		int seconds = div1000 % 60;
+
+		sprintf(desc, "Timer: %.2d:%.2d:%.2d", hours, minutes, seconds);
+		int strWidth = GetTextWitdh(desc);
+		PrintGameStr(x - strWidth, y, desc, COL_WHITE);
+	};
+
+	auto drawDeltaTime = [](long long time, int x, int y) {
+		char desc[256];
+		long long div1000 = time / 1000;
+
+		int hours = div1000 / 3600;
+		int minutes = div1000 / 60 % 60;
+		int seconds = div1000 % 60;
+
+		if (hours)
+			sprintf(desc, "+%.2d:%.2d:%.2ds", hours, minutes, seconds);
+		else if (minutes)
+			sprintf(desc, "+%.2d:%.2d", minutes, seconds);
+		else if (seconds)
+			sprintf(desc, "+%.2d", seconds);
+		else
+			return;
+
+		int strWidth = GetTextWitdh(desc);
+		PrintGameStr(x - strWidth, y, desc, COL_RED);
+	};
+
+	const int xPos = 630;
+	const int yPos = 20;
+	drawTimer(RealTimer, xPos, yPos);
+	drawDeltaTime(GameTimer - RealTimer, xPos, yPos + 15);
+}
+
+void DrawIromanCounters()
+{
+	char desc[256];
+	int nextline = 256;
+
+	monstersAlive = 0;
+
+	for (int mi = 0; mi < nummonsters; ++mi) {
+		const MonsterStruct &m = monster[monstactive[mi]];
+
+		if (!m._mDelFlag && m.mExp > 0
+		    && m._mx > 0 && m._my > 0
+		    && m._mmode != MM_DEATH
+		    && m.MType != nullptr && m.MType->mtype != MT_GOLEM) {
+			++monstersAlive;
+		}
+	}
+
+	if (monstersAlive <= 5) {
+		sprintf(desc, "Monsters: %i", monstersAlive);
+		PrintGameStr(8, nextline, desc, monstersAlive < 1 ? COL_BLUE : COL_WHITE);
+	}
+
+	nextline += 15;
+
+	objectsUntouched = 0;
+
+	for (int oi = 0; oi < nobjects; ++oi) {
+		const ObjectStruct &o = object[objectactive[oi]];
+
+		if (isSelectableObject(o) && isIronmanObject(o))
+		{
+			++objectsUntouched;
+		}
+	}
+
+	if (objectsUntouched <= 5) {
+		sprintf(desc, "Objects: %i", objectsUntouched);
+		PrintGameStr(8, nextline, desc, objectsUntouched < 1 ? COL_BLUE : COL_WHITE);
+	}
+
+	PlaySoundIfDungeonLevelClearIM();
+}
+
+void DrawGameSpeedStatus()
+{
+	char desc[256];
+
+	const int xPos = 640 - 8;
+	const int yPos = 65;
+	const int yShift = 15;
+
+	const char *x125 = "1.25";
+	const char *x150 = "1.50";
+
+	extern unsigned char CurrentGameSpeed;
+	if (CurrentGameSpeed) {
+		sprintf(desc, "GameSpeed: %s", CurrentGameSpeed > 1 ? x150 : x125);
+		int width = GetTextWitdh(desc);
+		PrintGameStr(xPos - width, yPos, desc, COL_GOLD);
+	}
+
+	int playersCount = 0;
+
+	if (gbMaxPlayers != 1)
+		for (int i = 0; i < MAX_PLRS; ++i)
+			if (plr[i].plractive)
+				++playersCount;
+
+	if (playersCount > 1) {
+		extern unsigned char PlayersGameSpeed[MAX_PLRS];
+		for (int i = 0; i < MAX_PLRS; ++i) {
+			if (plr[i].plractive && PlayersGameSpeed[i]) {
+				sprintf(desc, "%s: %s", plr[i]._pName, PlayersGameSpeed[i] > 1 ? x150 : x125);
+				int width = GetTextWitdh(desc);
+				PrintGameStr(xPos - width, yPos + yShift + yShift * i, desc, COL_WHITE);
+			}
+		}
+	}
+}
+
+void DrawXpBar()
+{
+	struct Shape {
+		int x;
+		int y;
+		int w;
+		int h;
+		char clr;
+	};
+
+	const Shape line = {
+		167, 472, // 167, 472 - bootom of panel
+		310, 2,   // 310, 2
+		PAL16_YELLOW + 5
+	};
+	const Shape back = {
+		line.x - 1, line.y - 1,
+		line.w + 2, line.h + 2,
+		PAL16_GRAY + 14
+	};
+	const Shape bound = {
+		back.x - 1, back.y - 1,
+		back.w + 2, back.h + 2,
+		PAL16_YELLOW + 4
+	};
+	const Shape sep = {
+		line.x + line.w / 10, back.y,
+		1, back.h,
+		PAL16_YELLOW + 10
+	};
+
+	DrawColorBox(bound.x, bound.y, bound.w, bound.h, bound.clr);
+	DrawColorBox(back.x, back.y, back.w, back.h, back.clr);
+
+	if (plr[myplr]._pLevel < MAXCHARLEVEL) {
+		extern int ExpLvlsTbl[MAXCHARLEVEL];
+		int prevExp = ExpLvlsTbl[plr[myplr]._pLevel - 1];
+		int nextExp = ExpLvlsTbl[plr[myplr]._pLevel] - prevExp;
+
+		int curExp = plr[myplr]._pExperience - prevExp;
+		int width = (int)((float)line.w * ((float)curExp / (float)nextExp));
+
+		if (width > line.w)
+			width = line.w;
+
+		DrawColorBox(line.x, line.y, width, line.h, line.clr - width * 5 / line.w);
+	}
+
+	int step = line.w / 10;
+	for (int i = 0; i < 9; ++i)
+		DrawColorBox(sep.x + i * step, sep.y, sep.w, sep.h, sep.clr);
+
+	char desc[256];
+
+	int clvl_xPos = 163;
+	int clvl_yPos = 478;
+	sprintf(desc, "%i", plr[myplr]._pLevel);
+	clvl_xPos -= GetTextWitdh(desc);
+	PrintGameStr(clvl_xPos, clvl_yPos, desc, COL_GOLD);
+
+	int nextClvl_xPos = 482;
+	int nextClvl_yPos = 478;
+	sprintf(desc, "%i", plr[myplr]._pLevel + 1);
+	PrintGameStr(nextClvl_xPos, nextClvl_yPos, desc, COL_GOLD);
+}
+
+void DrawColorBox(int x, int y, int width, int height, char color)
+{
+	if ((x + width) > SCREEN_WIDTH || x < 0)
+		return;
+
+	if ((y + height) > SCREEN_HEIGHT || y < 0)
+		return;
+
+	assert(gpBuffer);
+	if (gpBuffer == NULL)
+		return;
+
+	x += SCREEN_X;
+	y += SCREEN_Y;
+
+	for (int i = 0; i < height; ++i) {
+		BYTE *dst = &gpBuffer[x + PitchTbl[y + i]];
+
+		for (int j = 0; j < width; ++j)
+			dst[j] = color;
+	}
 }

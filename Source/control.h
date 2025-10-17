@@ -82,6 +82,8 @@ void control_reset_talk();
 BOOL control_talk_last_key(int vkey);
 BOOL control_presskeys(int vkey);
 
+int GetTextWitdh(const char *str);
+
 /* rdata */
 extern const BYTE fontframe[128];
 extern const BYTE fontkern[68];

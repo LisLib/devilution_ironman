@@ -60,4 +60,12 @@ void Cl2DrawLightTblSafe(int sx, int sy, BYTE *pCelBuff, int nCel, int nWidth, i
 void Cl2DrawLightSafe(int sx, int sy, BYTE *pCelBuff, int nCel, int nWidth, int CelSkip, int CelCap);
 void PlayInGameMovie(const char *pszMovie);
 
+DWORD InnerGetTickCount();
+void PlaySoundIfDungeonLevelClearIM();
+
+extern long long GameTimer;
+extern long long RealTimer;
+extern BOOL ShowGameTimerFlag;
+extern BOOL ShowGameSpeedFlag;
+
 #endif /* __ENGINE_H__ */

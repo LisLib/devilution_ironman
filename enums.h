@@ -2789,6 +2789,7 @@ typedef enum _cmd_id {
 #endif
 	FAKE_CMD_SETID,
 	FAKE_CMD_DROPID,
+	CMD_CHANGEGAMESPEED,
 	NUM_CMDS,
 } _cmd_id;
 

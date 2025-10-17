@@ -4144,3 +4144,68 @@ void PlayInGameMovie(const char *pszMovie)
 	PaletteFadeIn(8);
 	force_redraw = 255;
 }
+
+unsigned char SelectedGameSpeed = 0;
+unsigned char PlayersGameSpeed[MAX_PLRS] = { 0 };
+unsigned char CurrentGameSpeed = 0;
+
+void changeGameSpeed()
+{
+	SelectedGameSpeed > 1 ? SelectedGameSpeed = 0 : ++SelectedGameSpeed;
+	PlaySFX(IS_TITLEMOV);
+	NetSendCmdParam3(TRUE, CMD_CHANGEGAMESPEED, (DWORD)SelectedGameSpeed, 0, 0);
+}
+
+BOOL ShowGameTimerFlag = true;
+BOOL ShowGameSpeedFlag = true;
+
+long long GameTimer = 0;
+long long RealTimer = 0;
+
+DWORD InnerGetTickCount()
+{
+	static long long prev = GetTickCount();
+	static long long delta = 0;
+	static DWORD tickCounter = 0;
+
+	DWORD cur = GetTickCount();
+
+	delta = cur - prev;
+	RealTimer += delta;
+	prev = cur;
+
+	CurrentGameSpeed = SelectedGameSpeed;
+
+	for (int i = 0; i < MAX_PLRS; ++i) {
+		if (plr[i].plractive) {
+			if (PlayersGameSpeed[i] < CurrentGameSpeed)
+				CurrentGameSpeed = PlayersGameSpeed[i];
+		}
+	}
+
+	long long currentDelta = delta + delta / 4 * CurrentGameSpeed;
+
+	GameTimer += currentDelta;
+
+	tickCounter += currentDelta;
+
+	return tickCounter;
+}
+
+void PlaySoundIfDungeonLevelClearIM()
+{
+	static bool isClear = false;
+
+	extern int monstersAlive;
+	extern int objectsUntouched;
+
+	if (monstersAlive == 0 && objectsUntouched == 0)
+	{
+		if (!isClear) {
+			PlaySFX(IS_QUESTDN);
+			isClear = true;
+		}
+	}
+	else if (isClear)
+		isClear = false;
+}

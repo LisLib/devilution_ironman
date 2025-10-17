@@ -1509,6 +1509,12 @@ typedef struct PkPlayerStruct {
 	int pDamAcFlags;
 	int dwReserved[5];
 } PkPlayerStruct;
+
+typedef struct PkTimerStruct {
+	DWORD gameTimer;
+	DWORD realTimer;
+} PkTimerStruct;
+
 #pragma pack(pop)
 
 //////////////////////////////////////////////////

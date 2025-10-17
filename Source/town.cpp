@@ -1354,6 +1354,13 @@ void T_DrawView(int StartX, int StartY)
 	if (automapflag) {
 		DrawAutomap();
 	}
+
+	if (ShowGameTimerFlag)
+		DrawTimer();
+
+	if (ShowGameSpeedFlag)
+		DrawGameSpeedStatus();
+
 	if (stextflag && !qtextflag)
 		DrawSText();
 	if (invflag) {

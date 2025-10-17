@@ -65,7 +65,7 @@ void __cdecl dumphist(const char *pszFmt, ...)
 		}
 	}
 
-	dwTicks = GetTickCount();
+	dwTicks = InnerGetTickCount();
 	fprintf(sgpHistFile, "%4u.%02u  ", (dwTicks - gdwHistTicks) / 1000, (dwTicks - gdwHistTicks) % 1000 / 10);
 	vfprintf(sgpHistFile, pszFmt, va);
 	fprintf(
@@ -333,7 +333,7 @@ void multi_player_left(int pnum, int reason)
 void multi_net_ping()
 {
 	sgbTimeout = TRUE;
-	sglTimeoutStart = GetTickCount();
+	sglTimeoutStart = InnerGetTickCount();
 }
 
 static void multi_check_drop_player()
@@ -361,7 +361,7 @@ static void multi_begin_timeout()
 	}
 #endif
 
-	nTicks = GetTickCount() - sglTimeoutStart;
+	nTicks = InnerGetTickCount() - sglTimeoutStart;
 	if (nTicks > 20000) {
 		gbRunGame = FALSE;
 		return;
@@ -850,7 +850,7 @@ BOOL NetInit(BOOL bSinglePlayer, BOOL *pfExitProgram)
 				return FALSE;
 		}
 #ifdef _DEBUG
-		gdwHistTicks = GetTickCount();
+		gdwHistTicks = InnerGetTickCount();
 		dumphist("(%d) new game started", myplr);
 #endif
 		sgbNetInited = TRUE;

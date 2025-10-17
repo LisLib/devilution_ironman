@@ -15,6 +15,8 @@ void UnPackItem(PkItemStruct *is, ItemStruct *id);
 void PackPlayer(PkPlayerStruct *pPack, int pnum, BOOL manashield);
 #endif
 
+void UnPackTimer(PkTimerStruct *pPack);
+
 /* rdata */
 
 #endif /* __PACK_H__ */

@@ -234,7 +234,7 @@ void gmenu_draw()
 		if (gmenu_current_option)
 			gmenu_current_option(sgpCurrentMenu);
 #ifdef HELLFIRE
-		ticks = GetTickCount();
+		ticks = InnerGetTickCount();
 		if ((int)(ticks - LogoAnim_tick) > 25) {
 			LogoAnim_frame++;
 			if (LogoAnim_frame > 16)
@@ -256,7 +256,7 @@ void gmenu_draw()
 		}
 
 #ifndef HELLFIRE
-		ticks = GetTickCount();
+		ticks = InnerGetTickCount();
 #endif
 		if ((int)(ticks - PentSpin_tick) > 25) { // BUGFIX: thould be 50ms
 			PentSpin_frame++;
