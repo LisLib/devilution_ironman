@@ -2619,7 +2619,7 @@ bool isReadyToHighlightItemsOnAutomap()
 
 bool isReadyToHighlightMonstersOnAutomap()
 {
-	return monstersAlive <= 5 ;
+	return monstersAlive <= 3 ;
 }
 
 /**
@@ -3187,7 +3187,7 @@ void DrawTimer()
 		int seconds = div1000 % 60;
 
 		if (hours)
-			sprintf(desc, "+%.2d:%.2d:%.2ds", hours, minutes, seconds);
+			sprintf(desc, "+%.2d:%.2d:%.2d", hours, minutes, seconds);
 		else if (minutes)
 			sprintf(desc, "+%.2d:%.2d", minutes, seconds);
 		else if (seconds)
@@ -3246,7 +3246,7 @@ void DrawIromanCounters()
 		PrintGameStr(8, nextline, desc, objectsUntouched < 1 ? COL_BLUE : COL_WHITE);
 	}
 
-	PlaySoundIfDungeonLevelClearIM();
+	CheckAdditionalConditionsOfCurrentDungeonLevel();
 }
 
 void DrawGameSpeedStatus()

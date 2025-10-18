@@ -61,7 +61,7 @@ void Cl2DrawLightSafe(int sx, int sy, BYTE *pCelBuff, int nCel, int nWidth, int 
 void PlayInGameMovie(const char *pszMovie);
 
 DWORD InnerGetTickCount();
-void PlaySoundIfDungeonLevelClearIM();
+void CheckAdditionalConditionsOfCurrentDungeonLevel();
 
 extern long long GameTimer;
 extern long long RealTimer;

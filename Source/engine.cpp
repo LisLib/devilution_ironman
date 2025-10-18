@@ -4192,7 +4192,7 @@ DWORD InnerGetTickCount()
 	return tickCounter;
 }
 
-void PlaySoundIfDungeonLevelClearIM()
+void CheckAdditionalConditionsOfCurrentDungeonLevel()
 {
 	static bool isClear = false;
 
@@ -4201,9 +4201,17 @@ void PlaySoundIfDungeonLevelClearIM()
 
 	if (monstersAlive == 0 && objectsUntouched == 0)
 	{
-		if (!isClear) {
+		if (!isClear && !plr[myplr]._pLvlVisited[currlevel + 1]) {
 			PlaySFX(IS_QUESTDN);
 			isClear = true;
+		}
+
+		int item = 0;
+		if (currlevel == quests[Q_BETRAYER]._qlevel && quests[Q_BETRAYER]._qactive >= QUEST_INIT && PlrHasItem(myplr, IDI_LAZSTAFF, item) != NULL) {
+			RemoveInvItem(myplr, item);
+			quests[Q_BETRAYER]._qvar1 = 2;
+			quests[Q_BETRAYER]._qactive = QUEST_ACTIVE;
+			quests[Q_BETRAYER]._qlog = TRUE;
 		}
 	}
 	else if (isClear)

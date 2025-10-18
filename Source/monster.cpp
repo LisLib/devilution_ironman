@@ -3129,6 +3129,10 @@ BOOL M_DoTalk(int i)
 	}
 	if (monster[i].mName == UniqMonst[UMT_LACHDAN].mName) {
 		if (monster[i].mtalkmsg == TEXT_VEIL9) {
+			if (quests[Q_VEIL]._qactive == QUEST_INIT && quests[Q_VEIL]._qvar1 == 0) {
+				quests[Q_VEIL]._qvar1 = 1;
+				SpawnQuestItem(IDI_GLDNELIX, 0, 0, 5, 1);
+			}
 			quests[Q_VEIL]._qactive = QUEST_ACTIVE;
 			quests[Q_VEIL]._qlog = TRUE;
 		}
@@ -3294,30 +3298,31 @@ void DoEnding()
 
 void PrepDoEnding()
 {
-	int newKillLevel, i;
-	DWORD *killLevel;
+	DWORD & killLevel = plr[myplr].pDiabloKillLevel;
+	int newKillLevel = gnDifficulty + 1;
 
-	gbSoundOn = sgbSaveSoundOn;
-	gbRunGame = FALSE;
-	deathflag = FALSE;
-	cineflag = TRUE;
+	if (killLevel > newKillLevel)
+		newKillLevel = killLevel;
 
-	killLevel = &plr[myplr].pDiabloKillLevel;
-	newKillLevel = gnDifficulty + 1;
-	if (*killLevel > newKillLevel)
-		newKillLevel = *killLevel;
 	plr[myplr].pDiabloKillLevel = newKillLevel;
 
-	for (i = 0; i < MAX_PLRS; i++) {
+	for (int i = 0; i < MAX_PLRS; i++) {
 		plr[i]._pmode = PM_QUIT;
 		plr[i]._pInvincible = TRUE;
+
 		if (gbMaxPlayers > 1) {
 			if (plr[i]._pHitPoints >> 6 == 0)
 				plr[i]._pHitPoints = 64;
+
 			if (plr[i]._pMana >> 6 == 0)
 				plr[i]._pMana = 64;
 		}
 	}
+
+	gbRunGame = FALSE;
+	deathflag = FALSE;
+	gbSoundOn = sgbSaveSoundOn;
+	cineflag = TRUE;
 }
 
 BOOL M_DoDeath(int i)
@@ -3339,6 +3344,8 @@ BOOL M_DoDeath(int i)
 
 	monster[i]._mVar1++;
 	if (monster[i].MType->mtype == MT_DIABLO) {
+
+#ifdef ENDING
 		x = monster[i]._mx - ViewX;
 		if (x < 0)
 			x = -1;
@@ -3353,6 +3360,7 @@ BOOL M_DoDeath(int i)
 			y = y > 0;
 		}
 		ViewY += y;
+#endif
 
 		if (monster[i]._mVar1 == 140)
 			PrepDoEnding();
